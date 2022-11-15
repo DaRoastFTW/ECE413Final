@@ -22,7 +22,7 @@ const accountSchema = new db.Schema({
         saturation: Number
     }],
     lastAccess: Date,
-    devices: [string]
+    devices: [String]
 });
 
 const Accounts = db.model("Accounts", accountSchema);

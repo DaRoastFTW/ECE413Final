@@ -32,6 +32,11 @@ $(function(){
     var pass_check = false; 
     var email_check = false;
 
+    if(pwd1 === "" || pwd2 === ""){
+      alert("I know this is super challenging, but you need to enter something into password field");
+      return;
+    }
+
     if (pwd1 === pwd2){
       pass_check = true;
 
@@ -59,11 +64,11 @@ $(function(){
       return;
     }
     
-    const cust_info = { email: email, passsword: pwd1};
+    const cust_info = { email: email, password: pwd1};
 
     
     $.ajax({
-      url: 'signup/singup',
+      url: 'signup/signUp',
       method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(cust_info),
@@ -80,10 +85,12 @@ $(function(){
       
       }, 1000);
       }
+
       })
       .fail(function(data, textStatus, errorThrown){
-        alert(errorThrown + "FIX THIS YOU CUNT");
-        //TODO Fix this with errors from ary. Ary let me know when to update. 
+        alert(JSON.parse(data.responseText).msg);
+        // fixed 
+
       })
 
 
