@@ -20,6 +20,11 @@ const accountSchema = new db.Schema({
         timestamp: Date,
         pulse: Number,
         saturation: Number
-    }]
-
+    }],
+    lastAccess: Date,
+    devices: [string]
 });
+
+const Accounts = db.model("Accounts", accountSchema);
+
+module.exports = Accounts;
