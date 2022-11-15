@@ -12,6 +12,7 @@ router.post("/signUp", function (req, res)
             res.status(401).json({success: false, msg: "This email already used"});
         }
         else {
+
             const passwordHash = bcrypt.hashSync(req.body.password, 10);
             const newAccount = new Accounts({
                 email: req.body.email,

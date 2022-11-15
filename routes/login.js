@@ -4,7 +4,7 @@ var router = express.Router();
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 const { decode } = require('jsonwebtoken');
-
+const secret = "illegalpetes";
 //buncha stuff
 
 router.post("/login", function (req, res) {
@@ -14,7 +14,7 @@ router.post("/login", function (req, res) {
         }
         else if (!account) {
             // Email not in database
-            res.status(401).json({ error: "Login failure!!" });
+            res.status(401).json({ msg: "Login failure!!" });
         }
         else if (bcrypt.compareSync(req.body.password, account.password)) {
             const token = jwt.sign({ email: account.email }, secret);
