@@ -33,12 +33,12 @@ router.post("/login", function (req, res) {
 
 router.get("/status", function (req, res) {
     //See if the X-Auth header is set
-    if (!req.headers["x-auth"]) {
-        return res.status(401).json({success: false, msg: "Missing X-Auth header"});
+    if (!req.body.token) {
+        return res.status(401).json({success: false, msg: "Missing token"});
     }
 
     // X-Auth should contain the token
-    const token = req.headers["x-auth"];
+    const token = req.body.token;
     try {
         const decoded = jwt.decode(token, secret);
         // Send back email and last access

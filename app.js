@@ -13,6 +13,7 @@ const Accounts = require("./models/account");
 var argonRouter = require("./routes/argon.js");
 var loginRouter = require("./routes/login.js");
 var signupRouter = require("./routes/signup.js");
+var accountRouter = require("./routes/account.js");
 
 var app = express();
 
@@ -47,6 +48,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/argon', argonRouter);
 app.use('/login', loginRouter);
 app.use('/signup', signupRouter);
+app.use('/account', accountRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
