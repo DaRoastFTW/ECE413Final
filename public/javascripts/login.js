@@ -22,7 +22,7 @@ var email_check = false;
     }
     else{
 
-      alert("Email is not a Valid Email, FUCKING FIX IT!!!!");
+      alert("Email is not a Valid Email, FIX IT!!!!");
       $("#email").val("");
       $("#pwd").val("");
       return;

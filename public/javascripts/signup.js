@@ -42,7 +42,7 @@ $(function(){
 
     }
     else{
-      alert("Passwords Do Not Match, Fucking FIX IT"); //maybe i should use better language
+      alert("Passwords Do Not Match, FIX IT"); //maybe i should use better language
       $("#pwd").val("");
       $("#pwd2").val("");
       return;
@@ -57,7 +57,7 @@ $(function(){
     }
     else{
 
-      alert("Email is not a Valid Email, FUCKING FIX IT!!!!");
+      alert("Email is not a Valid Email, FIX IT!!!!");
       $("#email").val("");
       $("#pwd").val("");
       $("#pwd2").val("");

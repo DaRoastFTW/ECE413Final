@@ -1,20 +1,22 @@
 const { Schema } = require("mongoose");
 const db = require("../db");
 
-const timeSchema = new db.Schema({
-    hours: Number,
-    minutes: Number
-
-});
-
 const accountSchema = new db.Schema({
     //email, hashed password, start time, end time, 
     //frequency, Recorded values (Timestamp as Key,
     //Pulse and Saturation as values)
     email: String,
-    password: String, 
-    startTime: timeSchema,
-    endTime: timeSchema,
+    password: String,
+    startTime: {
+        hours: Number,
+        minutes: Number
+
+    },
+    endTime: {
+        hours: Number,
+        minutes: Number
+
+    },
     frequency: Number,
     recordedValues: [{
         timestamp: Date,
@@ -22,7 +24,11 @@ const accountSchema = new db.Schema({
         saturation: Number
     }],
     lastAccess: Date,
-    devices: [String]
+    devices: [{
+        name: String,
+        key: String
+    }],
+    particleToken: String,
 });
 
 const Accounts = db.model("Accounts", accountSchema);

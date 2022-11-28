@@ -14,6 +14,7 @@ var argonRouter = require("./routes/argon.js");
 var loginRouter = require("./routes/login.js");
 var signupRouter = require("./routes/signup.js");
 var accountRouter = require("./routes/account.js");
+var particleAccountRouter = require("./routes/particleLogin.js");
 
 var app = express();
 
@@ -49,6 +50,7 @@ app.use('/argon', argonRouter);
 app.use('/login', loginRouter);
 app.use('/signup', signupRouter);
 app.use('/account', accountRouter);
+app.use('/particleLogin', particleAccountRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

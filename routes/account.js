@@ -1,4 +1,5 @@
 var express = require('express');
+var superagent = require('superagent');
 const Accounts = require('../models/account');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
@@ -27,9 +28,12 @@ router.post('/addDevice', function (req, res) {
                 }
                 else {
                     const nameToAdd = req.body.device;
-                    account.devices.push(nameToAdd);
+                    const keyToAdd = jwt.sign(nameToAdd, secret);
+                    const device = { name: nameToAdd, key: keyToAdd };
+                    account.devices.push(device);
                     await account.save();
-                    const arrayToReturn = account.devices;
+                    const arrayToReturn = account.devices.map(({ name, key }) => name);
+                    //FIXME: Send the keyToAdd to the right Particle device
                     res.status(200).json(arrayToReturn);
                 }
             }
@@ -53,16 +57,22 @@ router.post('/removeDevice', function (req, res) {
         console.log(decoded);
         // Send back the array of devices associated with the account
         Accounts.findOne({ email: decoded.email }, async function (err, account) {
+            console.log(req.body.device);
             if (err) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
             }
-            else if (!account.devices.includes(req.body.device)) {
-                res.status(201).json({ success: false, message: "Uh, this device doesn't exist on the account" });
+            else if (!account.devices.map(({name, key}) => name).includes(req.body.device)) {
+                res.status().json({ success: false, message: "Uh, this device doesn't exist on the account" });
             }
             else {
-                account.devices.splice(account.devices.indexOf(req.body.device), 1);
+                for (let index = 0; index < account.devices.length; index++) {
+                    if (account.devices[index].name === req.body.device) {
+                        account.devices.splice(index, 1);
+                        break;
+                    }
+                }
                 await account.save();
-                const arrayToReturn = account.devices;
+                const arrayToReturn = account.devices.map(({ name, key }) => name);
                 res.status(200).json(arrayToReturn);
             }
         });
@@ -88,7 +98,7 @@ router.get('/getDevices', function (req, res) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
             }
             else {
-                const arrayToReturn = account.devices;
+                const arrayToReturn = account.devices.map(({ name, key }) => name);
                 res.status(200).json(arrayToReturn);
             }
         });

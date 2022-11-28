@@ -1,7 +1,8 @@
 $(function () {
   $("#nav-placeholder").load("navbar.html");
   var token = localStorage.getItem("token");
-  if (token != null) {
+  var particle_token = localStorage.getItem("particle-token")
+  if (token != null && particle_token != null) {
     const tokenGen = { token: token };
 
     $.ajax({
@@ -29,8 +30,11 @@ $(function () {
 
       })
   }
-  else {
+  else if(token == null) {
     window.location.replace("login.html");
+  }
+  else if(particle_token == null){
+    window.location.replace("particle.html");
   }
 });
 
