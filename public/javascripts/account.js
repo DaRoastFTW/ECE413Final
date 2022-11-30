@@ -3,7 +3,7 @@ $(function () {
   var token = localStorage.getItem("token");
   var particle_token = localStorage.getItem("particle-token")
   if (token != null && particle_token != null) {
-    const tokenGen = { token: token };
+    const tokenGen = { webToken: token, particleToken: particle_token};
 
     $.ajax({
       url: 'account/getDevices',
@@ -20,12 +20,15 @@ $(function () {
 
         //alert(deviceData);
         //Call function to build unordered list
-        buildList(data);
+        buildList(data.devices.body);
 
 
       })
       .fail(function (data, textStatus, errorThrown) {
-        alert(JSON.parse(data.responseText).msg);
+        var error = JSON.parse(data.responseText).msg;
+        if(error == "invalid_token"){
+          window.location.replace("particle.html");
+        }
         // fixed 
 
       })
@@ -89,10 +92,10 @@ function buildList(info) {
   $("#deviceList").html("");
 
   for (let i = 0; i < info.length; i++) {
-    var device = info[i];
+    var device = info[i].name;
     id_name = device.split(" ").join("_");
-    $("<li>" + info[i] + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = '&times'></li>").appendTo("#deviceList");
-    $("#" + id_name).click(() => { removeDevice(info[i]) });
+    $("<li>" + info[i].name + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = '&times'></li>").appendTo("#deviceList");
+    $("#" + id_name).click(() => { removeDevice(info[i].name) });
 
   }
 
@@ -126,3 +129,9 @@ function removeDevice(device) {
 
     })
 }
+
+        TESTER = document.getElementById('tester');
+        Plotly.newPlot( TESTER, [{
+        x: [1, 2, 3, 4, 5],
+        y: [1, 2, 4, 8, 16] }], {
+        margin: { t: 0 } } );

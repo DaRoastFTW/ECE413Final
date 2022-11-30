@@ -17,31 +17,79 @@
 <!-- Latest compiled JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="https://cdn.plot.ly/plotly-2.16.1.min.js"></script>
 
 
 <body>
 
     <div id="nav-placeholder"></div>
 
-    <div>
+    <div id ="addDevice" class="container border ">
         <!--//device
         //Add Device -->
-        <p>The Holy Grail Heart Sensors:</p>
-        <ul id = "deviceList">
-            
-        </ul>
-        <div class="form-group">
+        <div class="row">
+        <h2>The Holy Grail Heart Sensors:</h2>
+        </div>
+        
+        <div class = "row border">
+        <div class="form-group col border">
             
             <input type="submit" class="btn btn-primary" id="button" value = "Add Device">
+            <p>Needs to implement container of linked devices.</p>
             
           </div>
-         
+        <div class=" col border">
+            <p>
+                This is where the particle devices will be
+
+            </p>
+        </div>
+        </div>
+
 
 
     </div>
 
     <div>
         <!--Data -->
+        <div id = "Daily View"  class="contrainer border" >
+            <div  class="row border" id = "row1" >
+
+                <div  class="col" >
+                    Detailed Daily View: 
+                </div>
+                <div id = "radio"  class=" col border"> (Today) !Add Radio here!</div>
+                <div id = "dayRange" class="col border"> (Change Time Range)  !TODO ADD BUTTON!</div>
+                <div id = "freq"  class="col border">(Change Frequency)  !TODO ADD BUTTON!</div>
+            </div> 
+            <div id = "row2"  class="row border">
+                <div  class = "col border" id = "heartRate" >Heart Rate</div>
+                <div  class="col border" id="bloodO2" > Blood O2</div>
+            </div>   
+            <div id ="row3"  class="row border" >
+                <div  class="col border" >Graph 1</div>
+                <div  class="col border" >Graph 2</div>
+            </div>
+        </div>
+        <div id = "Weekly View">
+            <p>
+                Last Seven Day Summary: 
+            </p>
+                <div id = "Average"class = "border">
+                    Average: Fix in JavaScript
+
+
+                </div>
+                <div id = "minimum" class = "border">
+                    Minimum: Fix in JavaScript
+
+                </div>
+                
+                <div id = "maximum" class = "border">
+                    Maximum: Fix in JavaScript
+                </div>
+
+        </div>
 
     </div>
 
@@ -50,6 +98,8 @@
         <!--update settings part-->
 
     </div>
+    <div id="tester" style="width:600px;height:250px;"></div>
+    
 
 
 </body>

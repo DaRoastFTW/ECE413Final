@@ -42,6 +42,7 @@ var email_check = false;
       })
       .done(function (data, textStatus, jqXHR) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("particle-token", data.particleToken);
         window.location.replace("account.html");
   
         })

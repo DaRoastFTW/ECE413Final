@@ -4,6 +4,8 @@ const Accounts = require('../models/account');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 const secret = "illegalpetes";
+var Particle = require('particle-api-js');
+var particle = new Particle();
 
 router.post('/addDevice', function (req, res) {
     console.log(req.body.device);
@@ -61,7 +63,7 @@ router.post('/removeDevice', function (req, res) {
             if (err) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
             }
-            else if (!account.devices.map(({name, key}) => name).includes(req.body.device)) {
+            else if (!account.devices.map(({ name, key }) => name).includes(req.body.device)) {
                 res.status().json({ success: false, message: "Uh, this device doesn't exist on the account" });
             }
             else {
@@ -82,17 +84,59 @@ router.post('/removeDevice', function (req, res) {
     }
 });
 
-router.get('/getDevices', function (req, res) {
-    const token = req.query.token;
+router.get('/getDevices', async function (req, res) {
+    const particleToken = req.query.particleToken;
 
-    if (!req.query.token) {
-        return res.status(401).json({ success: false, msg: "Missing token" });
+    if (!req.query.webToken) {
+        return res.status(400).json({ success: false, msg: "Missing token" });
+    }
+
+    if (!req.query.particleToken) {
+        return res.status(400).json({ success: false, msg: "No hablo ingles" });
     }
 
     try {
-        const decoded = jwt.decode(token, secret);
-        console.log(decoded);
-        // Send back the array of devices associated with the account
+        var devicesPr = particle.listDevices({ auth: particleToken });
+        console.log("Particle token: " + particleToken);
+        var particleExists = true;
+
+        var deviceArray;
+
+        await devicesPr.then(
+            function (devices) {
+                deviceArray = devices;
+            },
+
+            function (err) {
+                //console.log("Yea, failed ", err);
+                particleExists = false;
+                console.log("particleExists: " + particleExists);
+            }
+        );
+
+        if (!particleExists) {
+            console.log("Bye bye");
+            res.status(400).json({ msg: "invalid_token" });
+        }
+        else {
+            res.status(201).json({ devices: deviceArray });
+        }
+
+
+    }
+    catch (ex) {
+        res.status(401).json({ success: false, message: "Invalid JWT" });
+    }
+});
+
+router.get('/getLocalDevices', function (req, res) {
+    const webToken = req.query.webToken;
+    if (!req.query.webToken) {
+        return res.status(400).json({ success: false, msg: "Missing token" });
+    }
+    try {
+        const decoded = jwt.decode(webToken, secret);
+        //Send back the array of devices associated with the account
         Accounts.findOne({ email: decoded.email }, async function (err, account) {
             if (err) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
@@ -102,9 +146,11 @@ router.get('/getDevices', function (req, res) {
                 res.status(200).json(arrayToReturn);
             }
         });
+
     }
     catch (ex) {
         res.status(401).json({ success: false, message: "Invalid JWT" });
+
     }
 });
 

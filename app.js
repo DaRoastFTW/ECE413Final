@@ -5,6 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var util= require('util');
 var encoder = new util.TextEncoder('utf-8');
+// var https = require("https");
+// var fs = require("fs");
+//var port = 3000;
 
 const bodyParser = require('body-parser');     // Parses JSON in body
 // for mongDB
@@ -56,6 +59,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
+// const options ={
+//   key:fs.readFileSync(path.join(__dirname,'./certs/key.pem')),
+//   cert:fs.readFileSync(path.join(__dirname,'./certs/cert.pem')) 
+// }
+
+//const sslserver =https.createServer(options,app)
+
 app.listen(3000);
+//sslserver.listen(port,()=>{console.log(`Secure Server is listening on port ${port}`)});
 
 module.exports = app;

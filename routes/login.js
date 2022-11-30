@@ -18,12 +18,13 @@ router.post("/login", function (req, res) {
         }
         else if (bcrypt.compareSync(req.body.password, account.password)) {
             const token = jwt.sign({ email: account.email }, secret);
+            const particleToken = account.particleToken;
             account.lastAccess = new Date();
             account.save((err, account) => {
                 console.log("User's LastAccess has been update");
             });
             // Send back token
-            res.status(201).json({success: true, token: token, msg: "Login success"});
+            res.status(201).json({success: true, token: token, particleToken: particleToken, msg: "Login success"});
         }
         else {
             res.status(401).json({success: false, msg: "Email or password invalid"});

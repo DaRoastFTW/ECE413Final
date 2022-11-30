@@ -23,7 +23,7 @@ router.post("/login", async function (req, res) {
     );
     console.log(tempParticleToken);
     if (particleFail) {
-        res.status(400).json({msg: "That didn't work, at all"});
+        return res.status(400).json({msg: "This ain't it chief"});
     }
 
     var accountInfo = jwt.decode(req.body.webtoken, secret);    
@@ -43,7 +43,7 @@ router.post("/login", async function (req, res) {
         console.log("Rusty");
         console.log(account.particleToken);
         console.log("Ary");
-        res.status(200).json({msg: "Subarashii!"});
+        res.status(200).json({msg: "Subarashii!", particleToken: tempParticleToken});
 
     });
 });
