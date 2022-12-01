@@ -2,8 +2,9 @@
 <html>
 <header>
     <title>Account</title>
+    <link rel="stylesheet" href="stylesheets/account.css">
 </header>
-<h1>Account</h1>
+<h1 class="text-center font-weight-bolder text-info" id="title">Account</h1>
 
 
 <!-- Latest compiled and minified CSS -->
@@ -23,7 +24,7 @@
 <body>
 
     <div id="nav-placeholder"></div>
-
+<!-- THis uses a container BootStrap Class. The top row is adding a device -->
     <div id ="addDevice" class="container border ">
         <!--//device
         //Add Device -->
@@ -32,19 +33,29 @@
         </div>
         
         <div class = "row border">
-        <div class="form-group col border">
+        <div class="col border" id="linkedDevice">
             
-            <input type="submit" class="btn btn-primary" id="button" value = "Add Device">
-            <p>Needs to implement container of linked devices.</p>
-            
-          </div>
-        <div class=" col border">
-            <p>
-                This is where the particle devices will be
+            <ul id="linkedDeviceList" class="list-unstyled" >
+                <lh>
+                    Linked Devices: 
+                </lh>
+                
 
-            </p>
+            </ul>
+            
+            </div>
+            
+        <div class=" col border" id ="particleDevice">
+            <ul id="particleDeviceList">
+                <lh>
+                    Particle Devices: 
+                </lh>
+                
+
+
+            </ul>
         </div>
-        </div>
+        
 
 
 
@@ -52,26 +63,69 @@
 
     <div>
         <!--Data -->
-        <div id = "Daily View"  class="contrainer border" >
-            <div  class="row border" id = "row1" >
+        <div id = "DailyView"  class="contrainer border" >
+            <div  class="row border " id = "row1" >
 
                 <div  class="col" >
-                    Detailed Daily View: 
+                    <h3 id = "detailed_daily_view" class = "mx-auto">Detailed Daily View:</h3>
                 </div>
-                <div id = "radio"  class=" col border"> (Today) !Add Radio here!</div>
-                <div id = "dayRange" class="col border"> (Change Time Range)  !TODO ADD BUTTON!</div>
-                <div id = "freq"  class="col border">(Change Frequency)  !TODO ADD BUTTON!</div>
-            </div> 
+                <div id = "radio"  class=" col border input-group-lg ">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">
+                            Choose a Date: 
+                        </span>
+
+
+                    </div>
+                    <input type="date" name="dob" id="dob" class="form-control wd-100"/> 
+                    
+                    
+                
+                </div>
+
+
+                <div id = "dayRange" class="col border input-group-lg ">
+                    
+                    <div id ="timeRange"  class="input-group-prepend-lg"> 
+                        <span class="input-group-text">
+                            Time Range: 
+                            Insert a Time Limit from 00:00 - 23:59
+                        </span>
+
+                    </div>
+                    
+                    <input id="beginningTime" onchange="updateTime()" type="time" name = "beginningTime" min = "00:00" max = "23:59" class="form-control input-lg w-100 " />
+                    <span class="validity"></span>
+                   
+                    
+                    <input id="endTime" onchange="updateTime()" type="time" name="endTime" min="00:00" max="23:59" class="form-control" />
+                    <span class="validity"></span>
+                    
+                </div>
+
+                <div id = "freq"  class="col border input-group "> 
+
+                    
+                        <div class="input-group-prepend">
+                          <span class="input-group-text">Frequency:</span>
+                        </div>
+                        <textarea id="frequencyText" onchange="updateFrequency()" class="form-control" aria-label="With textarea"></textarea>
+                        
+                      </div>
+
+                </div>
+           
             <div id = "row2"  class="row border">
-                <div  class = "col border" id = "heartRate" >Heart Rate</div>
-                <div  class="col border" id="bloodO2" > Blood O2</div>
+                <div  class = "col border text-center font-weight-bold" id = "heartRate" >Heart Rate</div>
+                <div  class="col border text-center font-weight-bold" id="bloodO2" > Blood O2</div>
             </div>   
             <div id ="row3"  class="row border" >
-                <div  class="col border" >Graph 1</div>
-                <div  class="col border" >Graph 2</div>
-            </div>
+                <div  class="col border" >Graph 1 Place Holder </div>
+                <div  class="col border" >Graph 2 Place Holder</div>
+            </div>  
+            
         </div>
-        <div id = "Weekly View">
+        <div id = "Weekly_View">
             <p>
                 Last Seven Day Summary: 
             </p>

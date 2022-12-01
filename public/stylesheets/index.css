@@ -1,11 +1,9 @@
 header{
-    font-size: 33%;
+  
     background-color: cadetblue;
 }
 h1{
-    text-align: center;
-    font-style: italic;
-    font-size: 25%;
+    
     color: darkblue;
     text-decoration: underline;
 }   
@@ -14,26 +12,8 @@ h4{
     font-size: 8%;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     text-decoration: underline;
-    font-style: bold;
-    text-align: right;
-    position: absolute;
-    top: 0;
-    bottom: 0;
+    
+    
     
 
-}
-#mission{
-    border: 2px;
-    border-style: ridge;
-    font:bold;
-    font-style: oblique;
-    margin:5px;
-    text-align: center;
-
-    font-size: 200%;
-
-
-}
-.images{
-  border-image: 50%;
 }

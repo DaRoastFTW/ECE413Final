@@ -32,7 +32,17 @@ router.post('/addDevice', function (req, res) {
                     const nameToAdd = req.body.device;
                     const keyToAdd = jwt.sign(nameToAdd, secret);
                     const device = { name: nameToAdd, key: keyToAdd };
-                    account.devices.push(device);
+                    // Make sure not adding duplicate device
+                    var canAdd = true;
+                    for (var i = 0; i < account.devices.length; i++) {
+                        var currDevice = account.devices[i];
+                        if (currDevice.name == nameToAdd) {
+                            var canAdd = false;
+                        }
+                    }
+                    if (canAdd) {
+                        account.devices.push(device);
+                    }
                     await account.save();
                     const arrayToReturn = account.devices.map(({ name, key }) => name);
                     //FIXME: Send the keyToAdd to the right Particle device
@@ -67,15 +77,21 @@ router.post('/removeDevice', function (req, res) {
                 res.status().json({ success: false, message: "Uh, this device doesn't exist on the account" });
             }
             else {
-                for (let index = 0; index < account.devices.length; index++) {
-                    if (account.devices[index].name === req.body.device) {
-                        account.devices.splice(index, 1);
-                        break;
+                if (account.devices.length > 0) {
+                    for (let index = 0; index < account.devices.length; index++) {
+                        if (account.devices[index].name === req.body.device) {
+                            account.devices.splice(index, 1);
+                            await account.save();
+                            break;
+                        }
                     }
+                    await account.save();
+                    const arrayToReturn = account.devices.map(({ name, key }) => name);
+                    res.status(200).json(arrayToReturn);
                 }
-                await account.save();
-                const arrayToReturn = account.devices.map(({ name, key }) => name);
-                res.status(200).json(arrayToReturn);
+                else{
+                    res.status(200).json([]);
+                }
             }
         });
     }
@@ -153,5 +169,32 @@ router.get('/getLocalDevices', function (req, res) {
 
     }
 });
+
+router.get('/getFreqencyAndTimes', function (req, res) {
+    const webToken = req.query.webToken;
+    if (!req.query.webToken) {
+        return res.status(400).json({ success: false, msg: "Missing token" });
+    }
+    try {
+        const decoded = jwt.decode(webToken, secret);
+
+        Accounts.findOne({email: decoded.email}, function (err, account) {
+            if (err) {
+                res.status(400).json({success: false, message: "Error contacting DB. Please contact support"});
+            }
+            else {
+                const frequency = account.frequency;
+                const startTime = account.startTime;
+                const endTime = account.endTime;
+
+                res.status(200).json({frequency: frequency, startTime: startTime, endTime: endTime});
+            }
+        });
+
+    }
+    catch (ex) {
+        res.status(401).json({ success: false, message: "Invalid JWT" });
+    }
+}); 
 
 module.exports = router;

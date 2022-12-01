@@ -3,7 +3,7 @@ $(function () {
   var token = localStorage.getItem("token");
   var particle_token = localStorage.getItem("particle-token")
   if (token != null && particle_token != null) {
-    const tokenGen = { webToken: token, particleToken: particle_token};
+    const tokenGen = { webToken: token, particleToken: particle_token };
 
     $.ajax({
       url: 'account/getDevices',
@@ -20,36 +20,65 @@ $(function () {
 
         //alert(deviceData);
         //Call function to build unordered list
-        buildList(data.devices.body);
+        buildParticleList(data.devices.body);
 
 
       })
       .fail(function (data, textStatus, errorThrown) {
         var error = JSON.parse(data.responseText).msg;
-        if(error == "invalid_token"){
+        if (error == "invalid_token") {
           window.location.replace("particle.html");
         }
         // fixed 
 
       })
+
+
+      $.ajax({
+        url: 'account/getLocalDevices',
+        method: 'GET',
+        contentType: 'application/json',
+        data: tokenGen,
+        dataType: 'json'
+  
+  
+  
+      })
+        .done(function (data, textStatus, jqXHR) {
+  
+  
+          //alert(deviceData);
+          //Call function to build unordered list
+          buildList(data);
+  
+  
+        })
+        .fail(function (data, textStatus, errorThrown) {
+          var error = JSON.parse(data.responseText).msg;
+          if (error == "invalid_token") {
+            window.location.replace("particle.html");
+          }
+          // fixed 
+  
+        })
+
   }
-  else if(token == null) {
+  else if (token == null) {
     window.location.replace("login.html");
   }
-  else if(particle_token == null){
+  else if (particle_token == null) {
     window.location.replace("particle.html");
   }
 });
 
-$("#button").click(addDevice);
+// $("#button").click(addDevice);
 
 
-function addDevice() {
+function addDevice(name) {
 
 
 
-  let name = prompt("Enter name of Device: ");
-
+  //let name = prompt("Enter name of Device: ");
   if (name != null) {
     const cust_name = { device: name, token: localStorage.getItem("token") };
     $.ajax({
@@ -68,7 +97,6 @@ function addDevice() {
         //alert(deviceData);
         //Call function to build unordered 
         if (data.message) {
-          alert(data.message);
           window.location.replace("account.html");
         }
         else {
@@ -88,14 +116,67 @@ function addDevice() {
 
 
 }
-function buildList(info) {
-  $("#deviceList").html("");
 
+
+function updateTime(){
+  var beginningTime = $("#beginningTime").val().split(":");
+  var endTime = $("#endTime").val().split(":");
+  var startHours = beginningTime[0];
+  var startMinutes = beginningTime[1];
+  var endHours = endTime[0];
+  var endMinutes = endTime[1];
+  alert(startHours + " " + startMinutes + "\n" + endHours + " " + endMinutes);
+}
+
+function updateFrequency() {
+  var freq = $("#frequencyText").val();
+  var deviceName = $("#linkedDeviceList li:first").text();
+
+  var package = { frequency: freq, particleToken: localStorage.getItem("particle-token"), webToken: localStorage.getItem("token"), particleDeviceName: deviceName };
+  $.ajax({
+    url: 'argon/sendFrequency',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(package),
+    dataType: 'json'
+
+
+
+  })
+    .done(function (data, textStatus, jqXHR) {
+      alert("Done");
+    })
+    .fail(function (data, textStatus, errorThrown) {
+      //alert("Fail");
+    })
+}
+
+function buildParticleList(info) {
+  $("#particleDeviceList").html("<lh>Particle Devices: </lh>");
+  if(info.length == 0){
+    $("<li>Please visit <a href='https://build.particle.io/build/new' target='_blank'>Particle</a> to register your devices</li>").appendTo("#particleDeviceList");
+  }
   for (let i = 0; i < info.length; i++) {
     var device = info[i].name;
-    id_name = device.split(" ").join("_");
-    $("<li>" + info[i].name + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = '&times'></li>").appendTo("#deviceList");
-    $("#" + id_name).click(() => { removeDevice(info[i].name) });
+    var id_name = device.split(" ").join("_");
+    $("<li>" + info[i].name + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = 'Link'></li>").appendTo("#particleDeviceList");
+    $("#" + id_name).click(() => { addDevice(info[i].name) });
+
+  }
+
+}
+function buildList(data) {
+  $("#linkedDeviceList").html("<lh>Linked Devices: </lh>");
+  if(data.length == 0){
+    $("<li>Please link Particle Devices to Rine Heart Monitoring</li>").appendTo("#linkedDeviceList");
+  }
+  for (let i = 0; i < data.length; i++) {
+    var device = data[i];
+    var id_name = device.split(" ").join("_");
+    $("#" + id_name).prop("disabled", true);
+    $("#" + id_name).val("Linked");
+    $("<li>" + device + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = 'Remove'></li>").appendTo("#linkedDeviceList");
+    $("#" + id_name).click(() => { removeDevice(device) });
 
   }
 
@@ -103,8 +184,9 @@ function buildList(info) {
 
 function removeDevice(device) {
 
-
   const cust_name = { device: device, token: localStorage.getItem("token") };
+  var id_name = device.split(" ").join("_");
+  
   $.ajax({
     url: 'account/removeDevice',
     method: 'POST',
@@ -121,6 +203,9 @@ function removeDevice(device) {
       //alert(deviceData);
       //Call function to build unordered list
       buildList(data);
+      $("#" + device).prop("disabled", false);
+      $("#" + id_name).val("Link");
+      //window.location.replace("account.html");
 
     })
     .fail(function (data, textStatus, errorThrown) {
@@ -130,8 +215,10 @@ function removeDevice(device) {
     })
 }
 
-        TESTER = document.getElementById('tester');
-        Plotly.newPlot( TESTER, [{
-        x: [1, 2, 3, 4, 5],
-        y: [1, 2, 4, 8, 16] }], {
-        margin: { t: 0 } } );
+TESTER = document.getElementById('tester');
+Plotly.newPlot(TESTER, [{
+  x: [1, 2, 3, 4, 5],
+  y: [1, 2, 4, 8, 16]
+}], {
+  margin: { t: 0 }
+});
