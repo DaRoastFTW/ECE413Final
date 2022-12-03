@@ -62,3 +62,8 @@ var email_check = false;
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
   };
+  $("#sacrifice").hover(function(){
+    $("body").css("background-image", "url('images/evil_ritual_1.jpg')");
+  },function(){
+    $("body").css("background-image", "none");   
+  });

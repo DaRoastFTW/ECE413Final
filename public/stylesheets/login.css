@@ -1,0 +1,20 @@
+h1{
+    text-decoration: underline;
+    color: darkblue;
+}
+h4{
+    font-size: 8%;
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    text-decoration: underline;
+    
+}
+#login_{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#submitbtn{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#password_{
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+

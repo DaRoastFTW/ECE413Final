@@ -5,6 +5,7 @@ var router = express.Router();
 var jwt = require('jsonwebtoken');
 const secret = "illegalpetes";
 var Particle = require('particle-api-js');
+const { start } = require('forever-monitor');
 var particle = new Particle();
 
 router.post('/addDevice', function (req, res) {
@@ -89,7 +90,7 @@ router.post('/removeDevice', function (req, res) {
                     const arrayToReturn = account.devices.map(({ name, key }) => name);
                     res.status(200).json(arrayToReturn);
                 }
-                else{
+                else {
                     res.status(200).json([]);
                 }
             }
@@ -170,8 +171,10 @@ router.get('/getLocalDevices', function (req, res) {
     }
 });
 
-router.get('/getFrequencyAndTimes', function (req, res) {
+router.get('/getFrequencyAndTimes', async function (req, res) {
     var webToken = req.query.webToken;
+    var particleToken = req.query.particleToken;
+    var deviceName = req.query.deviceName;
     console.log("Web token: " + webToken);
     console.log("Dump:" + JSON.stringify(req.query));
     if (!req.query.webToken) {
@@ -180,23 +183,68 @@ router.get('/getFrequencyAndTimes', function (req, res) {
     try {
         const decoded = jwt.decode(webToken, secret);
 
-        Accounts.findOne({email: decoded.email}, function (err, account) {
+        Accounts.findOne({ email: decoded.email }, async function (err, account) {
             if (err) {
-                res.status(400).json({success: false, message: "Error contacting DB. Please contact support"});
+                res.status(400).json({ success: false, message: "Error contacting DB. Please contact support" });
+            }
+            else if (account == null) {
+                res.status(400).json({ success: false, message: "Account doesn't exist" });
             }
             else {
-                const frequency = account.frequency;
-                const startTime = account.startTime;
-                const endTime = account.endTime;
+                var frequency;
+                if (account.frequency != null) {
+                    frequency = account.frequency;
+                }
+                else {
+                    account.frequency = 30;
+                    frequency = account.frequency;
+                }
 
-                res.status(200).json({frequency: frequency, startTime: startTime, endTime: endTime});
+
+                if (account.startTime != null) {
+                    const startTime = account.startTime;
+                }
+                else {
+                    account.startTime.hours = 9;
+                    account.startTime.minutes = 0;
+                }
+
+
+                if (account.endTime != null) {
+                    const endTime = account.endTime;
+                }
+                else {
+                    account.endTime.hours = 5;
+                    account.endTime.minutes = 0;
+                }
+
+                var publishEventPr = particle.publishEvent({ name: 'initial send', data: JSON.stringify({
+                    frequency: account.frequency, 
+                    startHour: account.startTime.hours,
+                    startMinutes: account.startTime.minutes,
+                    endHour: account.endTime.hours,
+                    endMinutes: account.endTime.minutes,
+                    deviceName: deviceName, 
+                    ok: true}), auth: particleToken });
+
+                await publishEventPr.then(
+                    function (data) {
+                        if (data.body.ok) {console.log("Initial send through successful");}
+                    },
+                    function (err) {
+                        console.log("Failed to send inital data " + err);
+                    }
+                );
+
+                res.status(200).json({ frequency: frequency, startTime: startTime, endTime: endTime });
             }
         });
+
 
     }
     catch (ex) {
         res.status(401).json({ success: false, message: "Invalid JWT" });
     }
-}); 
+});
 
 module.exports = router;

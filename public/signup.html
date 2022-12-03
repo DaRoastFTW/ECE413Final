@@ -2,6 +2,17 @@
 <html>
 <header>
     <title>Sign Up</title>
+    <link rel="stylesheet" href="stylesheets/signup.css">
+    <div class="container border-secondary" id="head">
+        <div class="row">
+            <h4 class="text-right col"> A Bremser & Nath Holdings Company Production </h4>
+        </div>
+
+        <div class="row">
+            <h1 class=" text-center col"> Sign Up</h1>
+        </div>
+    </div>
+
 </header>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
@@ -15,20 +26,78 @@
 
 <body>
     <div id="nav-placeholder"></div>
-    <h1>Sign Up</h1>
-    <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="text" class="form-control" id="email">
-    </div>
-    <div class="form-group">
-        <label for="pwd">Enter Password:</label>
-        <input type="password" class="form-control" id="pwd">
-    </div>
-    <div class="form-group">
-        <label for="pwd2">Re-Enter Password:</label>
-        <input type="password" class="form-control" id="pwd2">
-    </div>
-    <input type="submit" class="btn btn-primary" id="submitbtn">
+
+    <div class="container">
+        <div class="row border m-3" id="welcomeMessage">
+            <!--Welcome message-->
+            <p class="blockquote p-3 strong em font-weight-bold ">
+                We at Rine Heart Monitoring are glad you have chosen to join us. The Holy Grail Health Sensors have
+                changed millions and millions of lives.
+                We have saved so many people. By joining our group of brothers and sisters we being to correct evil in
+                the human race right from the heart.
+                The simple fact is that choice is the true culprit for human evil. We are working to remove human choice
+                and allow it to a better race.
+                A race that needs blood to survive and continue their work to build a better world. You have begun your
+                journey to join that better race.
+                It is time to leave the human race behind. Enter your email, create a password and you will join the
+                ranks of the Cultists of Heart.
+            </p>
+
+        </div>
+        <div class="row border m-3" id="message">
+            <!--Message from Rusty-->
+            <p class="blockquote p-3 strong em font-weight-bold ">
+                "It was 1956 when I had found the special gene that began to mutate human DNA to an advanced being. I
+                named these beings 'Homo sapiens homovorus' and became the first one.
+                The only problem was a need for increased blood to help accelerate muscle creation and fast healing.
+                This is why I created Rine Heart Monitoring to engineer new devices
+                that will help Homo Sapiens Homovorus survive and eventually take over this world. " -Dr Rusty Rinehart,
+                PHD, MD, DO, JD, DSW.
+            </p>
+        </div>
+        <div class="row pl-4 m-3 " id="inputs">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="text" class="form-control w-auto row" id="email" placeholder="Enter Email Here">
+                <small id="emailHelp" class="form-text text-muted">We will share your email with anyone we choose,
+                    Welcome to the cult!</small>
+            </div>
+            <div class="form-group">
+                <label for="pwd">Enter Password:</label>
+                <br>
+                <input type="password" class="form-control w-auto row" id="pwd" placeholder= "Ac1***" minlength="5" maxlength="12" size="15">
+                <br>
+                <small id="passwordCheck" class="form-text text-muted">Password's must include capital letter, lower
+                    case letter, number, and have a legnth between 5 and 12 characters.</small>
+            </div>
+            <div class="form-group ">
+                <label for="pwd2">Re-Enter Password:</label>
+                <br>
+                <input type="password" class="form-control w-auto row " id="pwd2" placeholder="Ac1***" minlength="5" maxlength="12" size="15">
+                <br>
+                <small id="passwordCheck" class="form-text text-muted row">Password's must include capital letter, lower
+                    case letter, number, and have a legnth between 5 and 12 characters.</small>
+            </div>
+        </div>
+        <div class="row mb-5 ml-5" id="submit">
+            <input type="submit" class="btn btn-primary row" id="submitbtn">
+        </div>
+        <div class="row border m-3" id="disclaimer">
+            <h4>
+                Disclaimer:
+            </h4>
+            <p id="disclaimerText" class="blockquote strong em font-weight-bold px-5">
+                Dr Salehi, this entire website is a joke website. I, Chris, hope that this is obvious. 
+                So everything written on any of these is meant to be taken as a joke. The content of the HTML may be a joke, however we have taken the project seriously. 
+                We have implemented everything on the rubric. No matter the differences between you and I, we as a group have enjoyed this class. We also recognise the difficulties 
+                thrust onto you by the Electrical and Computer Engineering Department. 
+
+                Thank you Sir. <span class="float-right m-3"> -Ary, Chris, Rusty!</span>
+
+            </p>
+            <img src="images/ualogo.jpg" alt="UAlogo" id="uaLogo" class="img-responsive rounded mx-auto d-block ">
+        </div>
+        
 
 </body>
 <script src="javascripts/signup.js"></script>

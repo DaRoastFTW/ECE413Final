@@ -1,7 +1,7 @@
 $(function () {
   $("#nav-placeholder").load("navbar.html");
   var token = localStorage.getItem("token");
-  var particle_token = localStorage.getItem("particle-token")
+  var particle_token = localStorage.getItem("particle-token");
   if (token != null && particle_token != null) {
     const tokenGen = { webToken: token, particleToken: particle_token };
 
@@ -34,33 +34,33 @@ $(function () {
       })
 
 
-      $.ajax({
-        url: 'account/getLocalDevices',
-        method: 'GET',
-        contentType: 'application/json',
-        data: tokenGen,
-        dataType: 'json'
-  
-  
-  
+    $.ajax({
+      url: 'account/getLocalDevices',
+      method: 'GET',
+      contentType: 'application/json',
+      data: tokenGen,
+      dataType: 'json'
+
+
+
+    })
+      .done(function (data, textStatus, jqXHR) {
+
+
+        //alert(deviceData);
+        //Call function to build unordered list
+        buildList(data);
+
+
       })
-        .done(function (data, textStatus, jqXHR) {
-  
-  
-          //alert(deviceData);
-          //Call function to build unordered list
-          buildList(data);
-  
-  
-        })
-        .fail(function (data, textStatus, errorThrown) {
-          var error = JSON.parse(data.responseText).msg;
-          if (error == "invalid_token") {
-            window.location.replace("particle.html");
-          }
-          // fixed 
-  
-        })
+      .fail(function (data, textStatus, errorThrown) {
+        var error = JSON.parse(data.responseText).msg;
+        if (error == "invalid_token") {
+          window.location.replace("particle.html");
+        }
+        // fixed 
+
+      })
 
 
   }
@@ -122,7 +122,7 @@ function addDevice(name) {
 }
 
 
-function updateTime(){
+function updateTime() {
   var beginningTime = $("#beginningTime").val().split(":");
   var endTime = $("#endTime").val().split(":");
   var deviceName = $("#linkedDeviceList li:first").text();
@@ -131,10 +131,10 @@ function updateTime(){
   var endHours = endTime[0];
   var endMinutes = endTime[1];
 
-  var startTime = {hours: startHours, minutes: startMinutes};
-  var finishTime = {hours: endHours, minutes: endMinutes};
+  var startTime = { hours: startHours, minutes: startMinutes };
+  var finishTime = { hours: endHours, minutes: endMinutes };
 
-  var package = {start: startTime, end: finishTime, particleToken: localStorage.getItem("particle-token"), webToken: localStorage.getItem("token"), particleDeviceName: deviceName};
+  var package = { start: startTime, end: finishTime, particleToken: localStorage.getItem("particle-token"), webToken: localStorage.getItem("token"), particleDeviceName: deviceName };
 
   $.ajax({
     url: 'argon/sendStartEnd',
@@ -142,13 +142,13 @@ function updateTime(){
     contentType: 'application/json',
     data: JSON.stringify(package),
     dataType: 'json'
-})
-  .done(function (data, textStatus, jqXHR) {
-    alert("Done");
   })
-  .fail(function (data, textStatus, errorThrown) {
-    //alert("Fail");
-  })
+    .done(function (data, textStatus, jqXHR) {
+      alert("Done");
+    })
+    .fail(function (data, textStatus, errorThrown) {
+      //alert("Fail");
+    })
 }
 
 function updateFrequency() {
@@ -176,7 +176,7 @@ function updateFrequency() {
 
 function buildParticleList(info) {
   $("#particleDeviceList").html("<lh>Particle Devices: </lh>");
-  if(info.length == 0){
+  if (info.length == 0) {
     $("<li>Please visit <a href='https://build.particle.io/build/new' target='_blank'>Particle</a> to register your devices</li>").appendTo("#particleDeviceList");
   }
   for (let i = 0; i < info.length; i++) {
@@ -190,7 +190,7 @@ function buildParticleList(info) {
 }
 function buildList(data) {
   $("#linkedDeviceList").html("<lh>Linked Devices: </lh>");
-  if(data.length == 0){
+  if (data.length == 0) {
     $("<li>Please link Particle Devices to Rine Heart Monitoring</li>").appendTo("#linkedDeviceList");
   }
   for (let i = 0; i < data.length; i++) {
@@ -206,10 +206,9 @@ function buildList(data) {
 }
 
 function removeDevice(device) {
-
   const cust_name = { device: device, token: localStorage.getItem("token") };
   var id_name = device.split(" ").join("_");
-  
+
   $.ajax({
     url: 'account/removeDevice',
     method: 'POST',
@@ -238,8 +237,10 @@ function removeDevice(device) {
     })
 }
 
-function displayFrequencyAndTimes () {
-  var webTokenObj = {webToken: localStorage.getItem("token")};
+function displayFrequencyAndTimes() {
+  var deviceName = $("#linkedDeviceList li:first").text();
+  var webTokenObj = {
+    webToken: localStorage.getItem("token"), particleToken: localStorage.getItem("particle-token"), deviceName: deviceName};
   $.ajax({
     url: 'account/getFrequencyAndTimes',
     method: 'GET',
@@ -250,18 +251,18 @@ function displayFrequencyAndTimes () {
 
     .done(function (data, textStatus, jqXHR) {
       $("#frequencyText").append(data.frequency);
-      if(data.startTime.hours < 10){
+      if (data.startTime.hours < 10) {
         data.startTime.hours = "0" + data.startTime.hours;
-      } 
-      if(data.startTime.minutes < 10){
+      }
+      if (data.startTime.minutes < 10) {
         data.startTime.minutes = "0" + data.startTime.minutes;
-      } 
-      if(data.endTime.hours < 10){
+      }
+      if (data.endTime.hours < 10) {
         data.endTime.hours = "0" + data.endTime.hours;
-      } 
-      if(data.endTime.minutes < 10){
+      }
+      if (data.endTime.minutes < 10) {
         data.endTime.minutes = "0" + data.endTime.minutes;
-      } 
+      }
       startTimeString = data.startTime.hours + ":" + data.startTime.minutes;
       endTimeString = data.endTime.hours + ":" + data.endTime.minutes;
       $("#beginningTime").val(startTimeString);

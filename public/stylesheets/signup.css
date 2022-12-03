@@ -1,0 +1,39 @@
+head{
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand";
+    background-color: #c0c0c0;
+
+
+}
+h1{
+    color: darkblue;
+    text-decoration: underline;
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand";
+}
+h4{
+    font-size: 8%;
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    text-decoration: underline;
+}
+#welcomeMessage{
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive ;
+    background-color:#ffe4b5;
+}
+#message{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    background-color: darkcyan;
+}
+#inputs{
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    background-color: blanchedalmond;
+
+}
+#submit{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#disclaimer{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+body{
+    background-color:#c0c0c0;
+}
+
