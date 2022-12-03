@@ -62,6 +62,7 @@ $(function () {
   
         })
 
+
   }
   else if (token == null) {
     window.location.replace("login.html");
@@ -69,6 +70,9 @@ $(function () {
   else if (particle_token == null) {
     window.location.replace("particle.html");
   }
+
+  displayFrequencyAndTimes();
+
 });
 
 // $("#button").click(addDevice);
@@ -121,11 +125,30 @@ function addDevice(name) {
 function updateTime(){
   var beginningTime = $("#beginningTime").val().split(":");
   var endTime = $("#endTime").val().split(":");
+  var deviceName = $("#linkedDeviceList li:first").text();
   var startHours = beginningTime[0];
   var startMinutes = beginningTime[1];
   var endHours = endTime[0];
   var endMinutes = endTime[1];
-  alert(startHours + " " + startMinutes + "\n" + endHours + " " + endMinutes);
+
+  var startTime = {hours: startHours, minutes: startMinutes};
+  var finishTime = {hours: endHours, minutes: endMinutes};
+
+  var package = {start: startTime, end: finishTime, particleToken: localStorage.getItem("particle-token"), webToken: localStorage.getItem("token"), particleDeviceName: deviceName};
+
+  $.ajax({
+    url: 'argon/sendStartEnd',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(package),
+    dataType: 'json'
+})
+  .done(function (data, textStatus, jqXHR) {
+    alert("Done");
+  })
+  .fail(function (data, textStatus, errorThrown) {
+    //alert("Fail");
+  })
 }
 
 function updateFrequency() {
@@ -212,6 +235,41 @@ function removeDevice(device) {
       alert(JSON.parse(data.responseText).msg);
       // fixed 
 
+    })
+}
+
+function displayFrequencyAndTimes () {
+  var webTokenObj = {webToken: localStorage.getItem("token")};
+  $.ajax({
+    url: 'account/getFrequencyAndTimes',
+    method: 'GET',
+    contentType: 'application/json',
+    data: webTokenObj,
+    dataType: 'json'
+  })
+
+    .done(function (data, textStatus, jqXHR) {
+      $("#frequencyText").append(data.frequency);
+      if(data.startTime.hours < 10){
+        data.startTime.hours = "0" + data.startTime.hours;
+      } 
+      if(data.startTime.minutes < 10){
+        data.startTime.minutes = "0" + data.startTime.minutes;
+      } 
+      if(data.endTime.hours < 10){
+        data.endTime.hours = "0" + data.endTime.hours;
+      } 
+      if(data.endTime.minutes < 10){
+        data.endTime.minutes = "0" + data.endTime.minutes;
+      } 
+      startTimeString = data.startTime.hours + ":" + data.startTime.minutes;
+      endTimeString = data.endTime.hours + ":" + data.endTime.minutes;
+      $("#beginningTime").val(startTimeString);
+      $("#endTime").val(endTimeString);
+      // alert("Should be ending: " + endTimeString);
+    })
+    .fail(function (data, textStatus, errorThrown) {
+      alert(JSON.parse(data.responseText).msg);
     })
 }
 

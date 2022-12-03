@@ -1,14 +1,5 @@
-ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    
-  }
-  .nav-item{
 
-    border-style: double;
-    
-
-
+  #nav{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
   }
 

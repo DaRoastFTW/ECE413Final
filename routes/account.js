@@ -170,8 +170,10 @@ router.get('/getLocalDevices', function (req, res) {
     }
 });
 
-router.get('/getFreqencyAndTimes', function (req, res) {
-    const webToken = req.query.webToken;
+router.get('/getFrequencyAndTimes', function (req, res) {
+    var webToken = req.query.webToken;
+    console.log("Web token: " + webToken);
+    console.log("Dump:" + JSON.stringify(req.query));
     if (!req.query.webToken) {
         return res.status(400).json({ success: false, msg: "Missing token" });
     }

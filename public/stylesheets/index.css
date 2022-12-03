@@ -1,6 +1,6 @@
 header{
   
-    background-color: cadetblue;
+    background-color: #c0c0c0;
 }
 h1{
     
@@ -10,10 +10,33 @@ h1{
 
 h4{
     font-size: 8%;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
     text-decoration: underline;
     
     
     
 
+}
+#mission{
+
+    font-size: 30px;
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#head{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#info{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#missionStatement{
+    background-color:#c0c0c0;
+}
+#name1{
+    background-color: #ffe4b5;
+}
+#name2{
+    background-color: #4682b4;
+}
+body{
+    background-color: #000000;
 }
