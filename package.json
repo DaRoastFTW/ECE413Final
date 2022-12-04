@@ -15,5 +15,8 @@
     "particle-api-js": "^9.4.1",
     "superagent": "^8.0.4",
     "whatwg-url": "^11.0.0"
+  },
+  "scripts": {
+    "start": "nodemon app.js"
   }
 }
