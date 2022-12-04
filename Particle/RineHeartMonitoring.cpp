@@ -14,12 +14,9 @@
 #include "MAX30105.h"
 #include "heartRate.h"
 #include "spo2_algorithm.h"
-
+#include <vector>
 bool measurementInterval();
 void getTime();
-void updateFrequency(const char *event, const char *data);
-void updateTime(const char *event, const char *data);
-void particleSync(const char *event, const char *data);
 bool fiveMins();
 bool inTimeRange();
 bool checkFinger();
@@ -28,6 +25,7 @@ void readSPO2();
 void setup();
 void loop();
 #line 12 "c:/Users/rrine/OneDrive/Documents/Particle/RineHeartMonitoring/src/RineHeartMonitoring.ino"
+SYSTEM_THREAD(ENABLED);
 int frequency = -1;
 int startHour = -1;
 int startMin = -1;
@@ -74,6 +72,18 @@ int32_t dummyHeartRate;
 int8_t dummyValidHeartRate;
 uint32_t irBuffer[100];
 uint32_t redBuffer[100];
+
+LEDStatus blinkBlue(RGB_COLOR_BLUE, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
+
+// Local Storage
+struct data
+{
+  std::string date;
+  std::string time;
+  std::string heartRate;
+  std::string spo2;
+};
+std::vector<data> localData;
 
 std::string getValue(std::string json, std::string key)
 {
@@ -189,6 +199,11 @@ bool inTimeRange()
 }
 bool checkFinger()
 {
+  if (partSensor.getIR() < 50000)
+  {
+    Serial.println("No fingy");
+    return false;
+  }
   return true;
 }
 void readHeart()
@@ -208,7 +223,7 @@ void readHeart()
       long delta = millis() - lastBeat;
       lastBeat = millis();
       beatsPerMinute = 60 / (delta / 1000.0);
-      Serial.println(beatsPerMinute);
+      // Serial.println(beatsPerMinute);
       if (beatsPerMinute < 255 && beatsPerMinute > 20)
       {
         rates[rateSpot++] = (byte)beatsPerMinute;
@@ -249,7 +264,7 @@ void setup()
   Particle.subscribe("frequency", updateFrequency);
   Particle.subscribe("time range", updateTime);
   Particle.subscribe("initial sync", particleSync);
-  currState = request;
+  currState = idle;
 
   // Sensor setup
   if (!partSensor.begin(Wire, 400000))
@@ -310,17 +325,23 @@ void loop()
     break;
   case request:
     Serial.println("Request");
-    // if(fiveMins()){
-    //   currState = wait;
-    // }
-    // else{
-    if (checkFinger())
+    blinkBlue.setActive(true);
+    if (fiveMins())
     {
-      readHeart();
-      readSPO2();
-      currState = measurement;
+      currState = wait;
+      blinkBlue.setActive(false);
     }
-    // }
+    else
+    {
+      if (checkFinger())
+      {
+
+        readHeart();
+        readSPO2();
+        blinkBlue.setActive(false);
+        currState = measurement;
+      }
+    }
     break;
   case measurement:
     Serial.println("Measurement");
@@ -328,7 +349,14 @@ void loop()
     Serial.print(heartRate);
     Serial.print(" SPO2 ");
     Serial.println(spo2);
-    currState = request;
+    data dataPoint;
+    dataPoint.date = std::to_string(currMonth) + "/" + std::to_string(currDay) + "/" + std::to_string(currYear);
+    dataPoint.time = std::to_string(currHour) + ":" + std::to_string(currMinute);
+    dataPoint.heartRate = std::to_string(heartRate);
+    dataPoint.spo2 = std::to_string(spo2);
+    localData.push_back(dataPoint);
+    currState = wait;
+    break;
   }
   delay(5000);
 }
