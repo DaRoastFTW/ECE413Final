@@ -50,7 +50,7 @@ $(function () {
         //alert(deviceData);
         //Call function to build unordered list
         buildList(data);
-
+        displayFrequencyAndTimes();
 
       })
       .fail(function (data, textStatus, errorThrown) {
@@ -71,7 +71,7 @@ $(function () {
     window.location.replace("particle.html");
   }
 
-  displayFrequencyAndTimes();
+  
 
 });
 
@@ -243,9 +243,9 @@ function displayFrequencyAndTimes() {
     webToken: localStorage.getItem("token"), particleToken: localStorage.getItem("particle-token"), deviceName: deviceName};
   $.ajax({
     url: 'account/getFrequencyAndTimes',
-    method: 'GET',
+    method: 'POST',
     contentType: 'application/json',
-    data: webTokenObj,
+    data: JSON.stringify(webTokenObj),
     dataType: 'json'
   })
 
@@ -270,7 +270,7 @@ function displayFrequencyAndTimes() {
       // alert("Should be ending: " + endTimeString);
     })
     .fail(function (data, textStatus, errorThrown) {
-      alert(JSON.parse(data.responseText).msg);
+      alert(JSON.parse(data.responseText).message);
     })
 }
 

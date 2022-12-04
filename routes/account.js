@@ -153,6 +153,7 @@ router.get('/getLocalDevices', function (req, res) {
     }
     try {
         const decoded = jwt.decode(webToken, secret);
+        console.log("DECODED : " + JSON.stringify(decoded));
         //Send back the array of devices associated with the account
         Accounts.findOne({ email: decoded.email }, async function (err, account) {
             if (err) {
@@ -171,27 +172,30 @@ router.get('/getLocalDevices', function (req, res) {
     }
 });
 
-router.get('/getFrequencyAndTimes', async function (req, res) {
-    var webToken = req.query.webToken;
-    var particleToken = req.query.particleToken;
-    var deviceName = req.query.deviceName;
+router.post('/getFrequencyAndTimes', async function (req, res) {
+    var webToken = req.body.webToken;
+    var particleToken = req.body.particleToken;
+    var particleToken2;
+    var deviceName = req.body.deviceName;
+
+    var frequency, startHour, startMinutes, endHour, endMinutes;
+
+
     console.log("Web token: " + webToken);
-    console.log("Dump:" + JSON.stringify(req.query));
-    if (!req.query.webToken) {
+    console.log("Dump:" + JSON.stringify(req.body));
+    if (!req.body.webToken) {
         return res.status(400).json({ success: false, msg: "Missing token" });
     }
     try {
         const decoded = jwt.decode(webToken, secret);
-
         Accounts.findOne({ email: decoded.email }, async function (err, account) {
             if (err) {
-                res.status(400).json({ success: false, message: "Error contacting DB. Please contact support" });
+                res.status(400).json({ success: false, msg: "Error contacting DB. Please contact support" });
             }
             else if (account == null) {
-                res.status(400).json({ success: false, message: "Account doesn't exist" });
+                res.status(400).json({ success: false, msg: "Account doesn't exist" });
             }
             else {
-                var frequency;
                 if (account.frequency != null) {
                     frequency = account.frequency;
                 }
@@ -205,7 +209,7 @@ router.get('/getFrequencyAndTimes', async function (req, res) {
                     const startTime = account.startTime;
                 }
                 else {
-                    account.startTime.hours = 9;
+                    account.startTime.hours = 6;
                     account.startTime.minutes = 0;
                 }
 
@@ -214,31 +218,49 @@ router.get('/getFrequencyAndTimes', async function (req, res) {
                     const endTime = account.endTime;
                 }
                 else {
-                    account.endTime.hours = 5;
+                    account.endTime.hours = 22;
                     account.endTime.minutes = 0;
                 }
+                
+                frequency = account.frequency;
+                startHour = account.startTime.hours;
+                startMinutes = account.startTime.minutes;
+                endHour = account.endTime.hours;
+                endMinutes = account.endTime.minutes;
 
-                var publishEventPr = particle.publishEvent({ name: 'initial send', data: JSON.stringify({
-                    frequency: account.frequency, 
-                    startHour: account.startTime.hours,
-                    startMinutes: account.startTime.minutes,
-                    endHour: account.endTime.hours,
-                    endMinutes: account.endTime.minutes,
-                    deviceName: deviceName, 
-                    ok: true}), auth: particleToken });
-
-                await publishEventPr.then(
-                    function (data) {
-                        if (data.body.ok) {console.log("Initial send through successful");}
-                    },
-                    function (err) {
-                        console.log("Failed to send inital data " + err);
-                    }
-                );
-
+                particleToken2 = account.particleToken;
+                
+                startTime = {hours: startHour, minutes: startMinutes};
+                endTime = {hours: endHour, minutes: endMinutes};
+        
+                console.log("Frequency " + frequency);
                 res.status(200).json({ frequency: frequency, startTime: startTime, endTime: endTime });
+
             }
+
+            var publishEventPr = particle.publishEvent({ name: 'initial sync', data: JSON.stringify({
+                frequency: frequency, 
+                startHour: startHour,
+                startMin: startMinutes,
+                endHour: endHour,
+                endMin: endMinutes,
+                deviceName: deviceName,
+                ok: true}), auth: particleToken });
+    
+            await publishEventPr.then(
+                function (data) {
+                    if (data.body.ok) {console.log("Initial send through successful");}
+                },
+                function (err) {
+                    console.log("Failed to send inital data " + err);
+                }
+            );
         });
+
+
+       
+
+
 
 
     }

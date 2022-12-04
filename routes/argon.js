@@ -15,6 +15,8 @@ router.post('/store', function (req, res, next) {
 router.post('/sendFrequency', async function (req, res) {
     console.log("Inside sendFrequency");
     var particleToken = req.body.particleToken;
+    console.log(particleToken);
+    //var particleToken;
     var particleDeviceName = req.body.particleDeviceName;
     var webToken = req.body.webToken;
     var newFrequency = req.body.frequency;
@@ -24,6 +26,7 @@ router.post('/sendFrequency', async function (req, res) {
         if (account != null) {
             account.frequency = newFrequency;
             account.save();
+            //particleToken = account.particleToken;
         }
     });
 
@@ -51,7 +54,9 @@ router.post('/sendFrequency', async function (req, res) {
 });
 
 router.post('/sendStartEnd', async function (req, res) {
+    console.log("start end");
     var particleToken = req.body.particleToken;
+    console.log(particleToken);
     var particleDeviceName = req.body.particleDeviceName;
     var hoursStart = req.body.start.hours;
     var minutesStart = req.body.start.minutes;
@@ -59,12 +64,23 @@ router.post('/sendStartEnd', async function (req, res) {
     var minutesEnd = req.body.end.minutes;
 
 
-    Accounts.findOne({ devices: { $elemMatch: { name: particleDeviceName } } }, function (err, account) {
+    Accounts.findOne({ devices: { $elemMatch: { name: particleDeviceName } } }, async function (err, account) {
         account.startTime.hours = hoursStart;
         account.startTime.minutes = minutesStart;
         account.endTime.hours = hoursEnd;
         account.endTime.minutes = minutesEnd;
         account.save();
+
+        var publishEventPr = particle.publishEvent({ name: 'time range', data: JSON.stringify({ startHour: hoursStart, startMin: minutesStart, endHour: hoursEnd, endMin: minutesEnd, deviceName: particleDeviceName, ok: true }), auth: particleToken });
+    
+        await publishEventPr.then(
+            function (data) {
+                if (data.body.ok) { console.log("Time range Event published succcessfully"); }
+            },
+            function (err) {
+                console.log("Failed to publish frequency event " + err);
+            }
+        );
     });
 
     //Particle schenagigans
@@ -73,16 +89,6 @@ router.post('/sendStartEnd', async function (req, res) {
     //This method will require the deviceID which we can pull and input into the key field of the devices object
     //This will require modiifying the addDevices route in the account.js router file
 
-    var publishEventPr = particle.publishEvent({ name: 'time range', data: JSON.stringify({ startHour: hoursStart, startMin: minutesStart, endHour: hoursEnd, endMin: minutesEnd, deviceName: particleDeviceName, ok: true }), auth: particleToken });
-
-    await publishEventPr.then(
-        function (data) {
-            if (data.body.ok) { console.log("Time range Event published succcessfully"); }
-        },
-        function (err) {
-            console.log("Failed to publish frequency event " + err);
-        }
-    );
 });
 
 module.exports = router;
