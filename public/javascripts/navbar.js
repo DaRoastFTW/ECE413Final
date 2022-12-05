@@ -7,7 +7,7 @@ $(function(){
     }
 
   });
-
+  
   function logout() {
 
     localStorage.removeItem("token");

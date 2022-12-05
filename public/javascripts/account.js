@@ -274,10 +274,80 @@ function displayFrequencyAndTimes() {
     })
 }
 
-TESTER = document.getElementById('tester');
-Plotly.newPlot(TESTER, [{
-  x: [1, 2, 3, 4, 5],
-  y: [1, 2, 4, 8, 16]
-}], {
-  margin: { t: 0 }
-});
+
+//Creating the Layout for the Heart Rate Graph
+var  heartRateLayout = {
+  title: 'Detailed Daily View Heart Rate',
+  autosize: true,
+  width: 500,
+  height: 500,
+  margin: {
+    l: 50,
+    r: 50,
+    b: 100,
+    t: 100,
+    pad: 4},
+  xaxis: {
+    title: 'Time of Day',
+   
+    
+  }, yaxis: {
+    title: 'Heart Rate Scatterplot',
+   
+    
+  }
+
+};
+
+// This is where we will gather data from the particle device. 
+
+var heartData = {
+  x: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  y: [1, 2, 4, 8, 16, 20 , 24, 28 , 32],
+  type: 'scatter'
+
+};
+//plots the data. Right now it uses var data It seems to need var data. but i will try my best. 
+
+ var data = [heartData];
+heartRate = document.getElementById('heartRate');
+Plotly.newPlot(heartRate, data, heartRateLayout);
+
+//Layout of Blood o2
+
+var  bloodO2Layout = {
+  title: 'Detailed Daily View Blood O2 %',
+  autosize: true,
+  width: 500,
+  height: 500,
+  margin: {
+    l: 50,
+    r: 50,
+    b: 100,
+    t: 100,
+    pad: 4},
+  xaxis: {
+    title: 'Time of Day',
+   
+    
+  }, yaxis: {
+    title: 'Blood O2 Scatterplot',
+   
+    
+  }
+
+};
+var bloodData ={
+  x:[1,2,3,4,5],
+  y:[1,2,4,8,16],
+  type: 'scatter'
+
+};
+
+// Interesting it looks like we just need to put the data in an array. 
+// This plots Blood O2. Just need the data.
+var bloodPlot = [bloodData];
+
+bloodO2 = document.getElementById('bloodO2');
+Plotly.newPlot(bloodO2,bloodPlot, bloodO2Layout);
+

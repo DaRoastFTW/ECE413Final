@@ -63,6 +63,9 @@ var email_check = false;
   };
   $("#pentagram").hover(function(){
     $("body").css("background-image", "url('images/pentagram.png')");
+    $("body").css("color", "#ffffff");
+   
   },function(){
     $("body").css("background-image", "none");   
+    $("body").css("color", "#000000");
   });

@@ -58,6 +58,7 @@ uint32_t irBuffer[100];
 uint32_t redBuffer[100];
 
 LEDStatus blinkBlue(RGB_COLOR_BLUE, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
+LEDStatus flashYellow(RGB_COLOR_YELLOW, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
 
 // Local Storage
 struct data
@@ -306,6 +307,9 @@ void loop()
       measurementHour = currHour;
       measurementMin = currMinute;
     }
+    else if (localData.size() > 0) {
+      currState = store;
+    }
     break;
   case request:
     Serial.println("Request");
@@ -339,8 +343,27 @@ void loop()
     dataPoint.heartRate = std::to_string(heartRate);
     dataPoint.spo2 = std::to_string(spo2);
     localData.push_back(dataPoint);
+    if (Particle.connected()) {
+    currState = wait;
+    }
+    else {
+      currState = yellow;
+    }
+    break;
+  case yellow:
+    flashYellow.setActive(true);
+    delay(2000);
     currState = wait;
     break;
+  case store:
+    // Placeholder for webhooking into particle cloud here. idk this well.
+    for (int i = 0; i < localData.size(); i++) {
+      localData.erase(i);
+    }
+    currState = wait;
+    break;
+
+
   }
   delay(5000);
 }

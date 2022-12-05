@@ -4,6 +4,8 @@
 }
 body{
     background-position: center;
-    background-size: 50%;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    translate: transformY(60%);
 
 }
