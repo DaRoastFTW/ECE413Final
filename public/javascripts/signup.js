@@ -106,15 +106,15 @@ const validateEmail = (email) => {
 };
 function passwordValidate(pwd) {
   var passwordValid = true;
-  if (pwd.match(/[^A-Z]/)) {
+  if (!pwd.match(/[A-Z]/)) {
     alert("Password must have at least one upper-case character!");
     passwordValid = false;
   }
-  if (pwd.match(/[^a-z]/)) {
+  if (!pwd.match(/[a-z]/)) {
     alert("Password must have at least one lower-case character!");
     passwordValid = false;
   }
-  if (pwd.match(/[^\d]/)) {
+  if (!pwd.match(/[\d]/)) {
     alert("Password must have at least one numeric digit!");
     passwordValid = false;
   }
