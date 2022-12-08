@@ -1,15 +1,18 @@
 /*
  * Project RineHeartMonitoring
- * Description:
- * Author:
- * Date:
+ * Description: ECE 413 IOT Heart Monitoring Project
+ * Authors: Rusty Rinehart, Ary Nath, Christopher Bremser
+ * Date: 12/7/2022
  */
 #include <Wire.h>
 #include "MAX30105.h"
 #include "heartRate.h"
 #include "spo2_algorithm.h"
 #include <vector>
+
+//Enable offline mode
 SYSTEM_THREAD(ENABLED);
+//default values
 int frequency = -1;
 int startHour = -1;
 int startMin = -1;
@@ -20,7 +23,7 @@ int measurementHour;
 int measurementMin;
 
 // Measurement window is minutes
-int measurementWindow = 1;
+int measurementWindow = 5;
 enum state
 {
   idle,
@@ -57,6 +60,7 @@ int8_t dummyValidHeartRate;
 uint32_t irBuffer[100];
 uint32_t redBuffer[100];
 
+//Set LED blinker indicators
 LEDStatus blinkBlue(RGB_COLOR_BLUE, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
 LEDStatus flashYellow(RGB_COLOR_YELLOW, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
 LEDStatus flashGreen(RGB_COLOR_GREEN, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
@@ -64,25 +68,26 @@ LEDStatus flashGreen(RGB_COLOR_GREEN, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_P
 // Local Storage
 struct data
 {
-  // char date[15];
-  // char time[15];
-  // char heartRate[5];
-  // char spo2[5];
   String date;
   String time;
   String heartRate;
   String spo2;
 };
+//localData holds all of the measurements locally until device is connected to internet
 std::vector<data> localData;
 
 String getValue(String json, String key)
 {
+  /*
+    Helper Method that grabs a value given the key of a string in JSON format
+  */
   int startKeyIndex = json.indexOf(key);
   int endKeyIndex = startKeyIndex + key.length();
   int startValueIndex = json.indexOf(":", endKeyIndex) + 1;
   int endValueIndex = json.indexOf(",", startValueIndex);
 
   String value = json.substring(startValueIndex, endValueIndex);
+  //Strip off any extra special characters
   if (value.charAt(0) == '"')
   {
     value = value.remove(0, 1);
@@ -94,10 +99,14 @@ String getValue(String json, String key)
   return value;
 }
 bool measurementInterval()
+/*
+  Returns true if in the time window of measurements
+*/
 {
   int start = startHour * 60 + startMin;
   int end = endHour * 60 + endMin;
   int curr = currHour * 60 + currMinute;
+  //Loop through time to see if it is time to make a sensor reading
   for (int i = start; i <= end; i += frequency)
   {
     if (i == curr)
@@ -109,6 +118,9 @@ bool measurementInterval()
 }
 void getTime()
 {
+  /*
+    Updates all time values to current time
+  */
   Time.zone(-7);
   currYear = Time.year();
   currMonth = Time.month();
@@ -118,14 +130,19 @@ void getTime()
 }
 void updateFrequency(const char *event, const char *data)
 {
+  /*
+    Called whenever the user updates the frequency on the site
+  */
   Serial.println(data);
   String data1(data);
   frequency = (getValue(data1, "frequency")).toInt();
-  Serial.println(frequency);
 }
 
 void updateTime(const char *event, const char *data)
 {
+  /*
+    Called whenever the user updates the time window on the site
+  */
   Serial.println(data);
   String data1(data);
   startHour = (getValue(data1, "startHour")).toInt();
@@ -133,21 +150,22 @@ void updateTime(const char *event, const char *data)
   endHour = (getValue(data1, "endHour")).toInt();
   endMin = (getValue(data1, "endMin")).toInt();
 
-  Serial.print(startHour);
-  Serial.print(":");
-  Serial.println(startMin);
-  Serial.print(endHour);
-  Serial.print(":");
-  Serial.println(endMin);
 }
 void tokenDelivery(const char *event, const char *data)
 {
+  /*
+    Called when the server sends the API Key over to the particle
+  */
   Serial.println(data);
   String data1(data);
   api_key = (getValue(data1, "apikey")).toInt();
 }
 void particleSync(const char *event, const char *data)
 {
+  /*
+    Called when account.html is loaded in order to ensure device
+    and server are synced
+  */
   Serial.println(data);
   String data1(data);
   frequency = (getValue(data1, "frequency")).toInt();
@@ -156,23 +174,16 @@ void particleSync(const char *event, const char *data)
   endHour = (getValue(data1, "endHour")).toInt();
   endMin = (getValue(data1, "endMin")).toInt();
 
-  Serial.println("Particle Sync");
-  Serial.println(frequency);
-  Serial.print(startHour);
-  Serial.print(":");
-  Serial.println(startMin);
-  Serial.print(endHour);
-  Serial.print(":");
-  Serial.println(endMin);
 }
 bool fiveMins()
 {
+  /*
+    Returns true if five minutes has elapsed since measurements were started
+    to be requested.
+  */
   int measurementTime = measurementHour * 60 + measurementMin;
   int now = currHour * 60 + currMinute;
-  //  Serial.print("MeasurementTime ");
-  //  Serial.print(measurementTime);
-  //  Serial.print(" now ");
-  //  Serial.println(now);
+
   if (now >= measurementTime + measurementWindow)
   {
     return true;
@@ -181,6 +192,9 @@ bool fiveMins()
 }
 bool inTimeRange()
 {
+  /*
+    Returns true if current time falls within user defined range of day
+  */
   bool inRange = true;
   if ((currHour < startHour) || ((currHour == startHour) && (currMinute < startMin)))
   {
@@ -194,6 +208,9 @@ bool inTimeRange()
 }
 bool checkFinger()
 {
+  /*
+    Checks if finger is on sensor
+  */
   if (partSensor.getIR() < 50000)
   {
     Serial.println("No fingy");
@@ -205,11 +222,8 @@ void readHeart()
 {
   // This is where we'll read in sensor data
 
-  // Serial.print("irValue ");
-  // Serial.println(irValue);
-  // Serial.print("checkForBeat ");
-  // Serial.println(checkForBeat(irValue));
   Serial.println("Reading Heartbeat...");
+  // Take 100 samples
   for (int i = 0; i < 100; i++)
   {
     long irValue = partSensor.getIR();
@@ -236,8 +250,12 @@ void readHeart()
 }
 void readSPO2()
 {
+  /*
+    Reads Blood Oxygen Saturation
+  */
   Serial.println("Reading Blood Oxygen Saturation...");
   bufferLength = 100;
+  // Take 100 samples to find the best value
   for (byte i = 0; i < bufferLength; i++)
   {
     while (partSensor.available() == false)
@@ -253,6 +271,9 @@ void readSPO2()
 // This is where we'll also read sensor data
 void concatenate_string(char* s, char* s1)
 {
+  /*
+    Helper method to combine two character arrays
+  */
     int i;
  
     int j = strlen(s);
@@ -270,10 +291,12 @@ void concatenate_string(char* s, char* s1)
 void setup()
 {
   Serial.begin(9600);
+  //Subscribe to all events
   Particle.subscribe("frequency", updateFrequency);
   Particle.subscribe("time range", updateTime);
   Particle.subscribe("initial sync", particleSync);
   Particle.subscribe("token delivery", tokenDelivery);
+  // Set to initial state
   currState = idle;
 
   // Sensor setup
@@ -282,13 +305,8 @@ void setup()
     Serial.println("MAX30105 has left the building");
     while (1);
   }
-  // byte ledBrightness = 0x1f;
-  // byte sampleAverage = 8;
-  // byte ledMode = 3;
-  // int sampleRate = 100;
-  // int pulseWidth = 411;
-  // int adcRange = 4096;
 
+  
   partSensor.setup();
   partSensor.setPulseAmplitudeRed(0x0a);
 
@@ -299,6 +317,7 @@ void setup()
 void loop()
 {
   // The core of your code will likely live here.
+  //Grab updated time value
   getTime();
   data dataPoint;
   Serial.print(currMonth);
@@ -310,10 +329,12 @@ void loop()
   Serial.print(currHour);
   Serial.print(":");
   Serial.println(currMinute);
+  // Beginning of state machine
   switch (currState)
   {
   case idle:
     Serial.println("Idle");
+    //Move to wait if in measuring hours
     if (inTimeRange())
     {
       currState = wait;
@@ -321,18 +342,20 @@ void loop()
     break;
   case wait:
     Serial.println("Wait");
-
+    //Move back to Idle if out of measuring hours
     if (!(inTimeRange()))
     {
       currState = idle;
     }
+    //If in a measurement time slot, switch to request state and start 5 minute timer
     else if (measurementInterval() && !(currHour == measurementHour && currMinute == measurementMin))
     {
       currState = request;
       measurementHour = currHour;
       measurementMin = currMinute;
     }
-    else if (localData.size() > 0)
+    //If data stored locally and connected to internet, change to store state
+    else if (localData.size() > 0 && Particle.connected())
     {
       
       currState = store;
@@ -340,7 +363,9 @@ void loop()
     break;
   case request:
     Serial.println("Request");
+    //Blink blue while requesting measurements
     blinkBlue.setActive(true);
+    //Go back to wait if user doesn't get a measurement in 5 minutes
     if (fiveMins())
     {
       currState = wait;
@@ -348,9 +373,10 @@ void loop()
     }
     else
     {
+      //If user doesn't have finger on, don't measure
       if (checkFinger())
       {
-
+        //Read two values
         readHeart();
         readSPO2();
         blinkBlue.setActive(false);
@@ -360,32 +386,20 @@ void loop()
     break;
   case measurement:
     Serial.println("Measurement");
-    Serial.print("Heart Rate: ");
-    Serial.print(heartRate);
-    Serial.print(" SPO2 ");
-    Serial.println(spo2);
+    // Serial.print("Heart Rate: ");
+    // Serial.print(heartRate);
+    // Serial.print(" SPO2 ");
+    // Serial.println(spo2);
 
-    // char currMonthString[5];
-    // char currDayString[5];
-    // char currYearString[5];
-    // char currHourString[5];
-    // char currMinuteString[5];
-    // char heartRateString[5];
-    // char spo2String[5];
 
-    // std::sprintf(currMonthString, "%d", currMonth);
-    // std::sprintf(currDayString, "%d", currDay);
-    // std::sprintf(currYearString, "%d", currYear);
-    // std::sprintf(currHourString, "%d", currMonth);
-    // std::sprintf(currMinuteString, "%d", currMonth);
-    // std::sprintf(heartRateString, "%d", currMonth);
-    // std::sprintf(spo2String, "%d", currMonth);
-
+    //Create timestamp string to bundle in with sending data
     dataPoint.date = String(currMonth) + "/" + String(currDay) + "/" + String(currYear);
     dataPoint.time = String(currHour) + ":" + String(currMinute);
     dataPoint.heartRate = String(heartRate);
     dataPoint.spo2 = String(spo2);
+    //Add data to localStorage
     localData.push_back(dataPoint);
+    //Flash yellow if no internet available
     if (Particle.connected())
     {
       currState = wait;
@@ -402,11 +416,11 @@ void loop()
     currState = wait;
     break;
   case store:
-    // Placeholder for webhooking into particle cloud here. idk this well.
+
     Serial.println("Store");
-    Serial.println(localData.size());
     for (int i = 0; i < localData.size(); i++)
     {
+      //Loop through all data, build packet
       String dataStream = "";
       dataStream += api_key + " ";
       dataStream += localData.at(i).date + " ";
@@ -417,15 +431,18 @@ void loop()
       int strLength = dataStream.length();
       char charStream[strLength + 1];
       strcpy(charStream, dataStream.c_str());
+      //Send data to Particle API
       Particle.publish("store", charStream);
-      // Get ACK
     }
+    //Flash green after data is sent
     flashGreen.setActive(true);
     delay(2000);
     flashGreen.setActive(false);
+    //Clear local storage after data is sent to server
     localData.clear();
     currState = wait;
     break;
   }
+  //Device updates every 5 seconds
   delay(5000);
 }
