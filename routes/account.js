@@ -8,6 +8,7 @@ var Particle = require('particle-api-js');
 const { start } = require('forever-monitor');
 var particle = new Particle();
 
+// The code utilizes the device name and converts to ASCII numbers to generate the key
 function apiKeyGeneration(s) {
     let charCodeArr = [];
     let apikeyString = "";
@@ -28,9 +29,10 @@ function apiKeyGeneration(s) {
 
 }
 
+
 router.post('/addDevice', function (req, res) {
     console.log(req.body.device);
-    const token = req.body.token;
+    const token = req.body.token; // JWT token
     console.log(token);
     if (!req.body.token) {
         return res.status(401).json({ success: false, msg: "Missing token" });
@@ -45,6 +47,7 @@ router.post('/addDevice', function (req, res) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
             }
             else {
+                //Validates if device already exists
                 if (account.devices.includes(req.body.device)) {
                     console.log("Yoyo");
                     res.status(201).json({ success: false, message: "This device already exists" });
@@ -66,7 +69,6 @@ router.post('/addDevice', function (req, res) {
                     }
                     await account.save();
                     const arrayToReturn = account.devices.map(({ name, key }) => name);
-                    //FIXME: Send the keyToAdd to the right Particle device
                     res.status(200).json(arrayToReturn);
                 }
             }
@@ -79,7 +81,7 @@ router.post('/addDevice', function (req, res) {
 
 router.post('/removeDevice', function (req, res) {
     console.log(req.body.device);
-    const token = req.body.token;
+    const token = req.body.token; //JWT token
     console.log(token);
     if (!req.body.token) {
         return res.status(401).json({ success: false, msg: "Missing token" });
@@ -94,6 +96,7 @@ router.post('/removeDevice', function (req, res) {
             if (err) {
                 res.status(400).json({ success: false, message: "Error contacting DB. Please contact support." });
             }
+            // Checks if device is not on account
             else if (!account.devices.map(({ name, key }) => name).includes(req.body.device)) {
                 res.status().json({ success: false, message: "Uh, this device doesn't exist on the account" });
             }
@@ -107,6 +110,7 @@ router.post('/removeDevice', function (req, res) {
                         }
                     }
                     await account.save();
+                    //Converts object dictionary to array
                     const arrayToReturn = account.devices.map(({ name, key }) => name);
                     res.status(200).json(arrayToReturn);
                 }

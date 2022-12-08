@@ -380,20 +380,29 @@ function updateGraph() {
         },
         xaxis: {
           title: 'Time of Day',
-          showgrid: false
+          showgrid: false,
+          showspikes: true,
+          spikemode: "toaxis"
 
 
         }, yaxis: {
           title: 'Heart Rate Scatterplot',
-          showgrid: false
+          showgrid: false,
+          showspikes: true,
+          spikemode: 'toaxis'
+         
+
 
 
         }
 
       };
+      const config = {
+        displayModeBar: false, // this is the line that hides the bar.
+      };
       var data = [heartData];
       heartRate = document.getElementById('heartRate');
-      Plotly.newPlot(heartRate, data, heartRateLayout);
+      Plotly.newPlot(heartRate, data, heartRateLayout, config);
 
       //Layout of Blood o2
 
@@ -407,16 +416,22 @@ function updateGraph() {
           r: 50,
           b: 100,
           t: 100,
-          pad: 4
+          pad: 4,
+
         },
+        paper_bgcolor:#dc143c,
         xaxis: {
           title: 'Time of Day',
-          showgrid: false
+          showgrid: false,
+          showspikes: true,
+          spikemode: "toaxis"
 
 
         }, yaxis: {
           title: 'Blood O2 Scatterplot',
-          showgrid: false
+          showgrid: false,
+          showspikes: true,
+          spikemode: 'toaxis'
 
         }
 
@@ -433,7 +448,7 @@ function updateGraph() {
       var bloodPlot = [bloodData];
 
       bloodO2 = document.getElementById('bloodO2');
-      Plotly.newPlot(bloodO2, bloodPlot, bloodO2Layout);
+      Plotly.newPlot(bloodO2, bloodPlot, bloodO2Layout,config);
 
     })
     .fail(function (data, textStatus, errorThrown) {
