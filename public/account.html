@@ -120,17 +120,17 @@
                           <!--Graphs for Heart Rate and Blood 02 levels -->
                 <div  class="col " >
                     
-                    <div  class = "col  text-center font-weight-bold w-300 h-500" id = "heartRate"  >Heart Rate</div>
+                    <div  class = "col  text-center font-weight-bold w-300 h-500 border my-3" id = "heartRate"  >Heart Rate</div>
                 </div>
         
                 <div  class="col" >
-                    <div  class="col text-center font-weight-bold w-300 h-500" id="bloodO2" > Blood O2 % </div>
+                    <div  class="col text-center font-weight-bold w-300 h-500 border my-3" id="bloodO2" > Blood O2 % </div>
 
 
                 </div>
             </div>  
             <div class="row" id="row3">
-                <h3> Daily Key Values: </h3>
+                <h3 class="m-2"> Daily Key Values: </h3>
                 <div class="col border text-center" id="dailyMinDisplay">
                     <p>Minimums:</p>
                     <ul>
@@ -168,24 +168,25 @@
             </div>
             
         </div>
-        <div id = "Weekly_View">
-            <h3>
+        <div id = "Weekly_View" class="container">
+            <div class="row m-3 p-1">
+            <h3 class="m-2">
                 Last Seven Day Summary: 
             </h3>
-                <div id = "averageWeekly"class = "border">
+                <div id = "averageWeekly"class = "border col text-center">
                     Average: Fix in JavaScript
 
 
                 </div>
-                <div id = "minimumWeekly" class = "border">
+                <div id = "minimumWeekly" class = "border col text-center">
                     Minimum: Fix in JavaScript
 
                 </div>
                 
-                <div id = "maximumWeekly" class = "border">
+                <div id = "maximumWeekly" class = "border col text-center">
                     Maximum: Fix in JavaScript
                 </div>
-
+            </div>
         </div>
 
     </div>

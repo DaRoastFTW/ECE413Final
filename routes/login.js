@@ -21,40 +21,16 @@ router.post("/login", function (req, res) {
             const particleToken = account.particleToken;
             account.lastAccess = new Date();
             account.save((err, account) => {
-                console.log("User's LastAccess has been update");
+                console.log("User's LastAccess has been updated");
             });
             // Send back token
-            res.status(201).json({success: true, token: token, particleToken: particleToken, msg: "Login success"});
+            res.status(201).json({ success: true, token: token, particleToken: particleToken, msg: "Login success" });
         }
         else {
-            res.status(401).json({success: false, msg: "Email or password invalid"});
+            res.status(401).json({ success: false, msg: "Email or password invalid" });
         }
     })
 });
 
-router.get("/status", function (req, res) {
-    //See if the X-Auth header is set
-    if (!req.body.token) {
-        return res.status(401).json({success: false, msg: "Missing token"});
-    }
-
-    // X-Auth should contain the token
-    const token = req.body.token;
-    try {
-        const decoded = jwt.decode(token, secret);
-        // Send back email and last access
-        Accounts.find({email: decoded.email}, "email lastAccess", function (err, account) {
-            if (err) {
-                res.status(400).json({success: false, message: "Error contacting DB. Please contact support."});
-            }
-            else {
-                res.status(200).json(account);
-            }
-        });
-    }
-    catch (ex) {
-        res.status(401).json({success: false, message: "Invalid JWT"});
-    }
-});
 
 module.exports = router;

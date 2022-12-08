@@ -33,7 +33,7 @@ function register() {
   var email_check = false;
 
   if (pwd1 === "" || pwd2 === "") {
-    alert("I know this is super challenging, but you need to enter something into password field");
+    alert("You can't have a blank password.");
     return;
   }
 
@@ -42,14 +42,14 @@ function register() {
 
   }
   else {
-    alert("Passwords Do Not Match, FIX IT"); //maybe i should use better language
+    alert("Passwords Do Not Match, FIX IT");
     $("#pwd").val("");
     $("#pwd2").val("");
     return;
 
   }
 
-
+//Check email and password
 
   if (passwordValidate(pwd1) && validateEmail(email)) {
     email_check = true;
@@ -66,7 +66,7 @@ function register() {
 
   const cust_info = { email: email, password: pwd1 };
 
-
+  //Add account to server
   $.ajax({
     url: 'signup/signUp',
     method: 'POST',
@@ -98,6 +98,7 @@ function register() {
 
 
 const validateEmail = (email) => {
+  //Match email to regex
   return String(email)
     .toLowerCase()
     .match(
@@ -105,6 +106,7 @@ const validateEmail = (email) => {
     );
 };
 function passwordValidate(pwd) {
+  //Validate various password validation requirements
   var passwordValid = true;
   if (!pwd.match(/[A-Z]/)) {
     alert("Password must have at least one upper-case character!");
@@ -118,7 +120,7 @@ function passwordValidate(pwd) {
     alert("Password must have at least one numeric digit!");
     passwordValid = false;
   }
-  if(pwd.length < 5 && pwd.length > 13){
+  if (pwd.length < 5 && pwd.length > 13) {
     alert("Password must be between 5-12 characters!");
     password = false;
   }

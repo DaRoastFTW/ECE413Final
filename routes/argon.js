@@ -5,23 +5,23 @@ const { randomString } = require('forever/lib/util/utils');
 var particle = new Particle();
 var router = express.Router();
 
-router.post('/store', function (req, res, next) {
+router.post('/store', function (req, res, next) { // Connects to a webhook from the Particle cloud
     var event = req.body.event;
     var data = req.body.deviceData;
-    console.log(data);
+    console.log(JSON.stringify(data))
     // apikey mm/dd/yyyy hh:mm pulse spo2
-    console.log(JSON.stringify(event));
+    // Above is the string sent from the device
     var initial = data.split(" ");
-    var date = initial[1].split("/");
-    var time = initial[2].split(":");
-    var timestamp = new Date(date[2], date[0] - 1, date[1], time[0], time[1]);
+    var date = initial[1].split("/"); // Date array
+    var time = initial[2].split(":"); //Time array
+    var timestamp = new Date(date[2], date[0] - 1, date[1], time[0], time[1]); // Creating the timestamp for the data point
 
-    Accounts.findOne({apikey: initial[0]}, function (err, account) {
+    Accounts.findOne({ apikey: initial[0] }, function (err, account) {
         if (err) {
-            res.status(400).json({msg: "Yeah, doesn't exist"});
+            res.status(400).json({ msg: "Yeah, doesn't exist" });
         }
 
-        var recordedValue = {timestamp: timestamp, pulse: initial[3], saturation: initial[4]};
+        var recordedValue = { timestamp: timestamp, pulse: initial[3], saturation: initial[4] }; // Packaging the values into one objecct
         account.recordedValues.push(recordedValue);
         account.save();
         res.status(200).json("got it");
@@ -30,33 +30,25 @@ router.post('/store', function (req, res, next) {
 });
 
 router.post('/sendFrequency', async function (req, res) {
-    console.log("Inside sendFrequency");
     var particleToken = req.body.particleToken;
-    console.log(particleToken);
-    //var particleToken;
     var particleDeviceName = req.body.particleDeviceName;
     var webToken = req.body.webToken;
     var newFrequency = req.body.frequency;
     //MongoDB schenagigans
-
+    //Send updated frequency to the server
     Accounts.findOne({ devices: { $elemMatch: { name: particleDeviceName } } }, function (err, account) {
         if (account != null) {
             account.frequency = newFrequency;
             account.save();
-            //particleToken = account.particleToken;
         }
     });
 
 
 
     //Particle schenagigans
-    //NOTE: Looks like we might have to set some things up on the Particle code end to match device to frequency
-    //Or we're using the wrong promise (I'd look at callFunction: https://docs.particle.io/reference/cloud-apis/javascript/#callfunction)
-    //This method will require the deviceID which we can pull and input into the key field of the devices object
-    //This will require modiifying the addDevices route in the account.js router file
 
     var publishEventPr = particle.publishEvent({ name: 'frequency', data: JSON.stringify({ frequency: newFrequency, deviceName: particleDeviceName, ok: true }), auth: particleToken });
-
+    // Particle promise to send the updated frequency to the device
     await publishEventPr.then(
         function (data) {
             if (data.body.ok) { console.log("Frequency Event published succcessfully"); }
@@ -71,16 +63,14 @@ router.post('/sendFrequency', async function (req, res) {
 });
 
 router.post('/sendStartEnd', async function (req, res) {
-    console.log("start end");
     var particleToken = req.body.particleToken;
-    console.log(particleToken);
     var particleDeviceName = req.body.particleDeviceName;
     var hoursStart = req.body.start.hours;
     var minutesStart = req.body.start.minutes;
     var hoursEnd = req.body.end.hours;
     var minutesEnd = req.body.end.minutes;
 
-
+    // Store new time range into the server, looks up by the device
     Accounts.findOne({ devices: { $elemMatch: { name: particleDeviceName } } }, async function (err, account) {
         account.startTime.hours = hoursStart;
         account.startTime.minutes = minutesStart;
@@ -89,7 +79,9 @@ router.post('/sendStartEnd', async function (req, res) {
         account.save();
 
         var publishEventPr = particle.publishEvent({ name: 'time range', data: JSON.stringify({ startHour: hoursStart, startMin: minutesStart, endHour: hoursEnd, endMin: minutesEnd, deviceName: particleDeviceName, ok: true }), auth: particleToken });
-    
+
+        //Particle schenagigans
+        //Sends updated time range to the device
         await publishEventPr.then(
             function (data) {
                 if (data.body.ok) { console.log("Time range Event published succcessfully"); }
@@ -100,15 +92,9 @@ router.post('/sendStartEnd', async function (req, res) {
         );
     });
 
-    //Particle schenagigans
-    //NOTE: Looks like we might have to set some things up on the Particle code end to match device to frequency
-    //Or we're using the wrong promise (I'd look at callFunction: https://docs.particle.io/reference/cloud-apis/javascript/#callfunction)
-    //This method will require the deviceID which we can pull and input into the key field of the devices object
-    //This will require modiifying the addDevices route in the account.js router file
+
 
 });
 
 module.exports = router;
 
-// Check device ID to see if it even has an entry in our system. If not, toss data.
-// If it does, match that account and put in the timestamp, 

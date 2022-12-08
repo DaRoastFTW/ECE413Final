@@ -24,7 +24,7 @@ function apiKeyGeneration(s) {
         apikeyString = apikeyString + charCodeArr[index];
 
     }
-    console.log("My API Key is " + apikeyString);
+    console.log(apikeyString);
     return apikeyString;
 
 }
@@ -133,31 +133,27 @@ router.get('/getDevices', async function (req, res) {
     }
 
     if (!req.query.particleToken) {
-        return res.status(400).json({ success: false, msg: "No hablo ingles" });
+        return res.status(400).json({ success: false, msg: "No Particle token is on the server" });
     }
 
     try {
         var devicesPr = particle.listDevices({ auth: particleToken });
-        console.log("Particle token: " + particleToken);
         var particleExists = true;
 
         var deviceArray;
 
-        await devicesPr.then(
+        await devicesPr.then( // Particle promise to log into the account
             function (devices) {
                 deviceArray = devices;
             },
 
             function (err) {
-                //console.log("Yea, failed ", err);
                 particleExists = false;
-                console.log("particleExists: " + particleExists);
             }
         );
 
         if (!particleExists) {
-            console.log("Bye bye");
-            res.status(400).json({ msg: "invalid_token" });
+            res.status(400).json({ msg: "You don't have a particle account" });
         }
         else {
             res.status(201).json({ devices: deviceArray });
@@ -171,13 +167,12 @@ router.get('/getDevices', async function (req, res) {
 });
 
 router.get('/getLocalDevices', function (req, res) {
-    const webToken = req.query.webToken;
+    const webToken = req.query.webToken; //JWT token
     if (!req.query.webToken) {
         return res.status(400).json({ success: false, msg: "Missing token" });
     }
     try {
         const decoded = jwt.decode(webToken, secret);
-        console.log("DECODED : " + JSON.stringify(decoded));
         //Send back the array of devices associated with the account
         Accounts.findOne({ email: decoded.email }, async function (err, account) {
             if (err) {
@@ -197,16 +192,15 @@ router.get('/getLocalDevices', function (req, res) {
 });
 
 router.post('/getFrequencyAndTimes', async function (req, res) {
-    var webToken = req.body.webToken;
+    var webToken = req.body.webToken; //JWT token
     var particleToken = req.body.particleToken;
-    var particleToken2;
     var deviceName = req.body.deviceName;
 
-    var frequency, startHour, startMinutes, endHour, endMinutes;
+    var frequency, startHour, startMinutes, endHour, endMinutes; //Variables to return
+    //start refers to beginning time, ie, startHour:startMinutes
+    //end refers to ending time, ie, endHour:endMinutes
 
 
-    console.log("Web token: " + webToken);
-    console.log("Dump:" + JSON.stringify(req.body));
     if (!req.body.webToken) {
         return res.status(400).json({ success: false, msg: "Missing token" });
     }
@@ -224,7 +218,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                     frequency = account.frequency;
                 }
                 else {
-                    account.frequency = 30;
+                    account.frequency = 30; // Default value is 30 minutes
                     frequency = account.frequency;
                 }
 
@@ -235,6 +229,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                 else {
                     account.startTime.hours = 6;
                     account.startTime.minutes = 0;
+                    //Default value is 6:00 AM
                 }
 
 
@@ -244,6 +239,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                 else {
                     account.endTime.hours = 22;
                     account.endTime.minutes = 0;
+                    //Defualt value is 10:00 PM
                 }
 
                 frequency = account.frequency;
@@ -252,17 +248,14 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                 endHour = account.endTime.hours;
                 endMinutes = account.endTime.minutes;
 
-                particleToken2 = account.particleToken;
-
-                startTime = { hours: startHour, minutes: startMinutes };
+                startTime = { hours: startHour, minutes: startMinutes }; // Packaging the times into more convienent objects
                 endTime = { hours: endHour, minutes: endMinutes };
 
-                console.log("Frequency " + frequency);
                 res.status(200).json({ frequency: frequency, startTime: startTime, endTime: endTime });
 
             }
 
-            var publishEventPr = particle.publishEvent({
+            var publishEventPr = particle.publishEvent({ // Particle promise to send time and frequency data to device
                 name: 'initial sync', data: JSON.stringify({
                     frequency: frequency,
                     startHour: startHour,
@@ -284,7 +277,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
             );
 
 
-            var apikey = apiKeyGeneration(deviceName);
+            var apikey = apiKeyGeneration(deviceName); // Making the api key for the device to exchange
 
             Accounts.findOne({ email: decoded.email }, async function (err, account) {
                 if (err) {
@@ -295,7 +288,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                 account.save();
             });
 
-            var publishEventPr2 = particle.publishEvent({
+            var publishEventPr2 = particle.publishEvent({ // Sending the token to the device separately via particle promise
                 name: 'token delivery', data: JSON.stringify({
                     apikey: apikey, ok: true
                 }), auth: particleToken
@@ -320,7 +313,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
 router.post('/getDailyData', function (req, res) {
     var date = req.body.date;
     var day = new Date(date);
-    var webToken = req.body.webToken;
+    var webToken = req.body.webToken; // JWT token
     var heartData;
     var arrayToSend = [];
 
@@ -335,7 +328,7 @@ router.post('/getDailyData', function (req, res) {
             heartData = account.recordedValues;
 
 
-            heartData.forEach(element => {
+            heartData.forEach(element => { // Filters data by the day being looked for
                 if ((day.getFullYear() == element.timestamp.getFullYear())
                     && (day.getMonth() == element.timestamp.getMonth())
                     && (day.getDate() == element.timestamp.getDate())) {
@@ -346,6 +339,7 @@ router.post('/getDailyData', function (req, res) {
             var timestamp = [], pulse = [], spo2 = [];
 
             arrayToSend.forEach(element => {
+                //Splits the datapoint object into 3 separate arrays with manipulation to get 12-hour time out of date objects
                 var hour = ("0" + element.timestamp.getHours()).slice(-2);
                 var minute = ("0" + element.timestamp.getMinutes()).slice(-2);
                 var meridian = "AM";
@@ -371,11 +365,9 @@ router.post('/getDailyData', function (req, res) {
 });
 
 router.post('/getWeeklyData', function (req, res) {
-    var webToken = req.body.webToken;
+    var webToken = req.body.webToken; //JWT token
     var now = new Date();
-    var lastWeek = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));;
-    console.log(now);
-    console.log(lastWeek);
+    var lastWeek = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));; // Getting last 7 days using JS time methods
     var heartData;
     var arrayToSend = [];
 
@@ -388,7 +380,7 @@ router.post('/getWeeklyData', function (req, res) {
         Accounts.findOne({ email: decoded.email }, function (err, account) {
             heartData = account.recordedValues;
 
-            heartData.forEach(element => {
+            heartData.forEach(element => { //Filtering by the last 7 days
                 if (element.timestamp.getTime() >= lastWeek.getTime()) {
                     arrayToSend.push(element);
                 }
@@ -397,6 +389,7 @@ router.post('/getWeeklyData', function (req, res) {
             var timestamp = [], pulse = [], spo2 = [];
 
             arrayToSend.forEach(element => {
+                //Splits the datapoint object into 3 separate arrays with manipulation to get 12-hour time out of date objects
                 var hour = ("0" + element.timestamp.getHours()).slice(-2);
                 var minute = ("0" + element.timestamp.getMinutes()).slice(-2);
                 var meridian = "AM";
@@ -419,6 +412,7 @@ router.post('/getWeeklyData', function (req, res) {
             var minHeartIndex = -1;
             var maxHeart = -1;
             var maxHeartIndex = -1;
+            // Finding the minimums and maximums of the data provided and the corresponding indexes
             for (var i = 0; i < pulse.length; i++) {
                 heartSum += pulse[i];
                 if (pulse[i] < minHeart) {
@@ -430,7 +424,7 @@ router.post('/getWeeklyData', function (req, res) {
                     maxHeartIndex = i;
                 }
             }
-            var avgHeartRate = heartSum / pulse.length;
+            var avgHeartRate = (heartSum / pulse.length).toFixed(2);
             var maxHeartTime = timestamp[maxHeartIndex];
             var minHeartTime = timestamp[minHeartIndex];
 
@@ -450,7 +444,7 @@ router.post('/getWeeklyData', function (req, res) {
                     maxSPO2Index = i;
                 }
             }
-            var avgSPO2 = spo2Sum / spo2.length;
+            var avgSPO2 = (spo2Sum / spo2.length).toFixed(2);
             var maxSPO2Time = timestamp[maxSPO2Index];
             var minSPO2Time = timestamp[minSPO2Index];
 

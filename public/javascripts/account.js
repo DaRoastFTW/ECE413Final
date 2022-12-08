@@ -1,11 +1,11 @@
-$(function () {
+$(function () {  // Loads when website is refreshed or initially entered
   $("#nav-placeholder").load("navbar.html");
-  var token = localStorage.getItem("token");
+  var token = localStorage.getItem("token"); // JWT token
   var particle_token = localStorage.getItem("particle-token");
-  if (token != null && particle_token != null) {
+  if (token != null && particle_token != null && particle_token != "undefined") {
     const tokenGen = { webToken: token, particleToken: particle_token };
 
-    $.ajax({
+    $.ajax({ //Initially pulls devices on account from particle token
       url: 'account/getDevices',
       method: 'GET',
       contentType: 'application/json',
@@ -17,24 +17,19 @@ $(function () {
     })
       .done(function (data, textStatus, jqXHR) {
 
-
-        //alert(deviceData);
-        //Call function to build unordered list
         buildParticleList(data.devices.body);
 
-
       })
-      .fail(function (data, textStatus, errorThrown) {
+      .fail(function (data, textStatus, errorThrown) { // Redirects to particle login to get particle token
         var error = JSON.parse(data.responseText).msg;
         if (error == "invalid_token") {
           window.location.replace("particle.html");
         }
-        // fixed 
 
       })
 
 
-    $.ajax({
+    $.ajax({ // Initially pulls devices stored locally
       url: 'account/getLocalDevices',
       method: 'GET',
       contentType: 'application/json',
@@ -47,8 +42,7 @@ $(function () {
       .done(function (data, textStatus, jqXHR) {
 
 
-        //alert(deviceData);
-        //Call function to build unordered list
+
         buildList(data);
         displayFrequencyAndTimes();
         var date = new Date();
@@ -59,21 +53,20 @@ $(function () {
         weekSummary();
 
       })
-      .fail(function (data, textStatus, errorThrown) {
+      .fail(function (data, textStatus, errorThrown) { // Redirects to particle login to get particle token
         var error = JSON.parse(data.responseText).msg;
         if (error == "invalid_token") {
           window.location.replace("particle.html");
         }
-        // fixed 
 
       })
 
 
   }
-  else if (token == null) {
+  else if (token == null) { // Redirects if JWT is invalid
     window.location.replace("login.html");
   }
-  else if (particle_token == null) {
+  else if (particle_token == null || particle_token == "undefined") { // Redirects if particle token doesn't exist
     window.location.replace("particle.html");
   }
 
@@ -81,14 +74,12 @@ $(function () {
 
 });
 
-// $("#button").click(addDevice);
 
 
-function addDevice(name) {
+function addDevice(name) { // Code that adds the device to the local account
 
 
 
-  //let name = prompt("Enter name of Device: ");
   if (name != null) {
     const cust_name = { device: name, token: localStorage.getItem("token") };
     $.ajax({
@@ -104,8 +95,7 @@ function addDevice(name) {
       .done(function (data, textStatus, jqXHR) {
 
 
-        //alert(deviceData);
-        //Call function to build unordered 
+
         if (data.message) {
           window.location.replace("account.html");
         }
@@ -117,7 +107,6 @@ function addDevice(name) {
       .fail(function (data, textStatus, errorThrown) {
         alert(JSON.parse(data.responseText).message);
         window.location.replace("account.html");
-        // fixed 
 
       })
   }
@@ -128,7 +117,7 @@ function addDevice(name) {
 }
 
 
-function updateTime() {
+function updateTime() { // Code that updates the time range being used for measurement
   var beginningTime = $("#beginningTime").val().split(":");
   var endTime = $("#endTime").val().split(":");
   var deviceName = $("#linkedDeviceList li:first").text();
@@ -159,7 +148,7 @@ function updateTime() {
 
 function updateFrequency() {
   var freq = $("#frequencyText").val();
-  var deviceName = $("#linkedDeviceList li:first").text();
+  var deviceName = $("#linkedDeviceList li:first").text(); // Pulls the device name from the element in HTML
 
   var package = { frequency: freq, particleToken: localStorage.getItem("particle-token"), webToken: localStorage.getItem("token"), particleDeviceName: deviceName };
   $.ajax({
@@ -180,12 +169,12 @@ function updateFrequency() {
     })
 }
 
-function buildParticleList(info) {
+function buildParticleList(info) { // Creating list for particle
   $("#particleDeviceList").html("<lh>Particle Devices: </lh>");
   if (info.length == 0) {
     $("<li>Please visit <a href='https://build.particle.io/build/new' target='_blank'>Particle</a> to register your devices</li>").appendTo("#particleDeviceList");
   }
-  for (let i = 0; i < info.length; i++) {
+  for (let i = 0; i < info.length; i++) { // Creating list with ancillary elements for particle list
     var device = info[i].name;
     var id_name = device.split(" ").join("_");
     $("<li>" + info[i].name + "<input type= 'submit' class = 'btn btn-primary' id = '" + id_name + "' value = 'Link'></li>").appendTo("#particleDeviceList");
@@ -194,12 +183,12 @@ function buildParticleList(info) {
   }
 
 }
-function buildList(data) {
+function buildList(data) { // Creating list from local account
   $("#linkedDeviceList").html("<lh>Linked Devices: </lh>");
   if (data.length == 0) {
     $("<li>Please link Particle Devices to Rine Heart Monitoring</li>").appendTo("#linkedDeviceList");
   }
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) { // Creating list with ancillary elements for local list
     var device = data[i];
     var id_name = device.split(" ").join("_");
     $("#" + id_name).prop("disabled", true);
@@ -243,7 +232,7 @@ function removeDevice(device) {
     })
 }
 
-function displayFrequencyAndTimes() {
+function displayFrequencyAndTimes() { // Pulls frequency and times from the server on initial entry into page or refresh
   var deviceName = $("#linkedDeviceList li:first").text();
   var webTokenObj = {
     webToken: localStorage.getItem("token"), particleToken: localStorage.getItem("particle-token"), deviceName: deviceName
@@ -258,6 +247,7 @@ function displayFrequencyAndTimes() {
 
     .done(function (data, textStatus, jqXHR) {
       $("#frequencyText").append(data.frequency);
+      // Output treatment for time
       if (data.startTime.hours < 10) {
         data.startTime.hours = "0" + data.startTime.hours;
       }
@@ -282,7 +272,7 @@ function displayFrequencyAndTimes() {
 }
 
 
-function updateGraph() {
+function updateGraph() { // Pulling data for graphs
   var day = $("#dob").val();
   // const date = new Date(day);
   const data = { date: day, webToken: localStorage.getItem("token") };
@@ -301,6 +291,8 @@ function updateGraph() {
       var heartArray = data.pulses;
       var spo2Array = data.spo2s;
 
+
+      // Finding minimum, maximum, and average heart rate and spO2
       var minHeart = 1000;
       var minHeartIndex = -1;
       for (var i = 0; i < heartArray.length; i++) {
@@ -363,6 +355,7 @@ function updateGraph() {
         y: heartArray,
         type: 'scatter'
 
+
       };
       //plots the data. Right now it uses var data It seems to need var data. but i will try my best. 
       //Creating the Layout for the Heart Rate Graph
@@ -390,10 +383,13 @@ function updateGraph() {
           showgrid: false,
           showspikes: true,
           spikemode: 'toaxis'
-         
 
 
 
+
+        }, colorway: ['#FF0000'],
+        font: { //"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+          family: "Comic Sans MS , Comic Sans, Bradley Hand"
         }
 
       };
@@ -419,7 +415,8 @@ function updateGraph() {
           pad: 4,
 
         },
-        paper_bgcolor:#dc143c,
+        paper_bgcolor: "rgb(240,255,255)",
+        plot_bgcolor: "rgb(240,255,255)",
         xaxis: {
           title: 'Time of Day',
           showgrid: false,
@@ -433,6 +430,8 @@ function updateGraph() {
           showspikes: true,
           spikemode: 'toaxis'
 
+        }, font: { //"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+          family: "Comic Sans MS , Comic Sans, Bradley Hand"
         }
 
       };
@@ -448,7 +447,7 @@ function updateGraph() {
       var bloodPlot = [bloodData];
 
       bloodO2 = document.getElementById('bloodO2');
-      Plotly.newPlot(bloodO2, bloodPlot, bloodO2Layout,config);
+      Plotly.newPlot(bloodO2, bloodPlot, bloodO2Layout, config);
 
     })
     .fail(function (data, textStatus, errorThrown) {
@@ -458,7 +457,8 @@ function updateGraph() {
     })
 }
 
-function weekSummary(){
+function weekSummary() {
+  // Getting weekly data for the user
   const data = { webToken: localStorage.getItem("token") };
   $.ajax({
     url: 'account/getWeeklyData',

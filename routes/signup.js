@@ -6,7 +6,7 @@ var bcrypt = require('bcrypt');
 
 
 router.post("/signUp", function (req, res) {
-
+    // Checking to see if account exist in the database, otherwise create account
     Accounts.findOne({ email: req.body.email }, function (err, account) {
         if (err) res.status(401).json({ success: false, err: err });
         else if (account) {
@@ -14,7 +14,7 @@ router.post("/signUp", function (req, res) {
         }
         else {
 
-            const passwordHash = bcrypt.hashSync(req.body.password, 10);
+            const passwordHash = bcrypt.hashSync(req.body.password, 10); // Store MD5 hashed password
             const newAccount = new Accounts({
                 email: req.body.email,
                 password: passwordHash
