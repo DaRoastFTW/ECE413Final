@@ -1,6 +1,6 @@
 h1{
     text-decoration: underline;
-    color: darkblue;
+    color: #00FFFF;
 }
 h4{
     font-size: 8%;
@@ -18,3 +18,15 @@ h4{
     font-family:"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
 }
 
+body{
+    background-position: center;
+    background-size: 95%;
+    background-repeat: no-repeat;
+    translate: transformY(60%);
+    background-color: #ffb6c1;
+
+
+}
+#Vampire{
+    display:none;
+}

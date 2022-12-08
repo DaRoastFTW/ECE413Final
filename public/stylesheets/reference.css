@@ -1,0 +1,21 @@
+header{
+    text-decoration: underline;
+    color: #00FFFF;
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    background-color: #c0c0c0;
+}
+body{
+    background-position: center;
+    background-size: 90%;
+    background-repeat: no-repeat;
+    translate: transformY(30%);
+}
+h3{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#list{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#list2{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}

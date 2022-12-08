@@ -1,15 +1,32 @@
 var express = require('express');
 const Accounts = require('../models/account');
 var Particle = require('particle-api-js');
+const { randomString } = require('forever/lib/util/utils');
 var particle = new Particle();
 var router = express.Router();
 
 router.post('/store', function (req, res, next) {
     var event = req.body.event;
-    var data = req.body.data;
-    console.log(event);
+    var data = req.body.deviceData;
     console.log(data);
-    res.status(200).json("got it");
+    // apikey mm/dd/yyyy hh:mm pulse spo2
+    console.log(JSON.stringify(event));
+    var initial = data.split(" ");
+    var date = initial[1].split("/");
+    var time = initial[2].split(":");
+    var timestamp = new Date(date[2], date[0] - 1, date[1], time[0], time[1]);
+
+    Accounts.findOne({apikey: initial[0]}, function (err, account) {
+        if (err) {
+            res.status(400).json({msg: "Yeah, doesn't exist"});
+        }
+
+        var recordedValue = {timestamp: timestamp, pulse: initial[3], saturation: initial[4]};
+        account.recordedValues.push(recordedValue);
+        account.save();
+        res.status(200).json("got it");
+    });
+
 });
 
 router.post('/sendFrequency', async function (req, res) {

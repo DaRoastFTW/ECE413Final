@@ -8,6 +8,26 @@ var Particle = require('particle-api-js');
 const { start } = require('forever-monitor');
 var particle = new Particle();
 
+function apiKeyGeneration(s) {
+    let charCodeArr = [];
+    let apikeyString = "";
+
+
+    for (let index = 0; index < s.length; index++) {
+        let code = s.charCodeAt(index);
+
+        charCodeArr.push(code);
+    }
+
+    for (let index = 0; index < charCodeArr.length; index++) {
+        apikeyString = apikeyString + charCodeArr[index];
+
+    }
+    console.log("My API Key is " + apikeyString);
+    return apikeyString;
+
+}
+
 router.post('/addDevice', function (req, res) {
     console.log(req.body.device);
     const token = req.body.token;
@@ -221,7 +241,7 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                     account.endTime.hours = 22;
                     account.endTime.minutes = 0;
                 }
-                
+
                 frequency = account.frequency;
                 startHour = account.startTime.hours;
                 startMinutes = account.startTime.minutes;
@@ -229,44 +249,218 @@ router.post('/getFrequencyAndTimes', async function (req, res) {
                 endMinutes = account.endTime.minutes;
 
                 particleToken2 = account.particleToken;
-                
-                startTime = {hours: startHour, minutes: startMinutes};
-                endTime = {hours: endHour, minutes: endMinutes};
-        
+
+                startTime = { hours: startHour, minutes: startMinutes };
+                endTime = { hours: endHour, minutes: endMinutes };
+
                 console.log("Frequency " + frequency);
                 res.status(200).json({ frequency: frequency, startTime: startTime, endTime: endTime });
 
             }
 
-            var publishEventPr = particle.publishEvent({ name: 'initial sync', data: JSON.stringify({
-                frequency: frequency, 
-                startHour: startHour,
-                startMin: startMinutes,
-                endHour: endHour,
-                endMin: endMinutes,
-                deviceName: deviceName,
-                ok: true}), auth: particleToken });
-    
+            var publishEventPr = particle.publishEvent({
+                name: 'initial sync', data: JSON.stringify({
+                    frequency: frequency,
+                    startHour: startHour,
+                    startMin: startMinutes,
+                    endHour: endHour,
+                    endMin: endMinutes,
+                    deviceName: deviceName,
+                    ok: true
+                }), auth: particleToken
+            });
+
             await publishEventPr.then(
                 function (data) {
-                    if (data.body.ok) {console.log("Initial send through successful");}
+                    if (data.body.ok) { console.log("Initial send through successful"); }
                 },
                 function (err) {
                     console.log("Failed to send inital data " + err);
                 }
             );
+
+
+            var apikey = apiKeyGeneration(deviceName);
+
+            Accounts.findOne({ email: decoded.email }, async function (err, account) {
+                if (err) {
+                    res.status(400).json({ success: false, msg: "Error contacting DB. Please contact support" });
+                }
+
+                account.apikey = apikey;
+                account.save();
+            });
+
+            var publishEventPr2 = particle.publishEvent({
+                name: 'token delivery', data: JSON.stringify({
+                    apikey: apikey, ok: true
+                }), auth: particleToken
+            });
+
+            await publishEventPr2.then(
+                function (data) {
+                    if (data.body.ok) { console.log("Token delivered"); }
+                },
+                function (err) {
+                    console.log("Failed to send token. Iss too big");
+                }
+            );
         });
-
-
-       
-
-
-
 
     }
     catch (ex) {
         res.status(401).json({ success: false, message: "Invalid JWT" });
     }
+});
+
+router.post('/getDailyData', function (req, res) {
+    var date = req.body.date;
+    var day = new Date(date);
+    var webToken = req.body.webToken;
+    var heartData;
+    var arrayToSend = [];
+
+
+    if (!req.body.webToken) {
+        return res.status(400).json({ success: false, msg: "Missing token" });
+    }
+
+    try {
+        const decoded = jwt.decode(webToken, secret);
+        Accounts.findOne({ email: decoded.email }, function (err, account) {
+            heartData = account.recordedValues;
+
+
+            heartData.forEach(element => {
+                if ((day.getFullYear() == element.timestamp.getFullYear())
+                    && (day.getMonth() == element.timestamp.getMonth())
+                    && (day.getDate() == element.timestamp.getDate())) {
+                    arrayToSend.push(element);
+                }
+            });
+
+            var timestamp = [], pulse = [], spo2 = [];
+
+            arrayToSend.forEach(element => {
+                var hour = ("0" + element.timestamp.getHours()).slice(-2);
+                var minute = ("0" + element.timestamp.getMinutes()).slice(-2);
+                var meridian = "AM";
+                if (hour >= 12) {
+                    meridian = "PM";
+                }
+                hour %= 12;
+                if (hour == 0) {
+                    hour = 12;
+                }
+                timestamp.push(hour + ":" + minute + " " + meridian);
+                pulse.push(element.pulse);
+                spo2.push(element.saturation);
+            });
+
+            res.status(200).json({ success: true, timestamps: timestamp, pulses: pulse, spo2s: spo2 });
+        });
+    }
+    catch (ex) {
+        res.status(401).json({ success: false, message: "Invalid JWT" });
+    }
+
+});
+
+router.post('/getWeeklyData', function (req, res) {
+    var webToken = req.body.webToken;
+    var now = new Date();
+    var lastWeek = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));;
+    console.log(now);
+    console.log(lastWeek);
+    var heartData;
+    var arrayToSend = [];
+
+    if (!req.body.webToken) {
+        return res.status(400).json({ success: false, msg: "Missing token" });
+    }
+
+    try {
+        const decoded = jwt.decode(webToken, secret);
+        Accounts.findOne({ email: decoded.email }, function (err, account) {
+            heartData = account.recordedValues;
+
+            heartData.forEach(element => {
+                if (element.timestamp.getTime() >= lastWeek.getTime()) {
+                    arrayToSend.push(element);
+                }
+            });
+
+            var timestamp = [], pulse = [], spo2 = [];
+
+            arrayToSend.forEach(element => {
+                var hour = ("0" + element.timestamp.getHours()).slice(-2);
+                var minute = ("0" + element.timestamp.getMinutes()).slice(-2);
+                var meridian = "AM";
+                if (hour >= 12) {
+                    meridian = "PM";
+                }
+                hour %= 12;
+                if (hour == 0) {
+                    hour = 12;
+                }
+                var day = element.timestamp.getDate();
+                var month = element.timestamp.getMonth() + 1;
+                var year = element.timestamp.getYear() + 1900;
+                timestamp.push(month + "/" + day + "/" + year + " @ " + hour + ":" + minute + " " + meridian);
+                pulse.push(element.pulse);
+                spo2.push(element.saturation);
+            });
+            var heartSum = 0;
+            var minHeart = 1000;
+            var minHeartIndex = -1;
+            var maxHeart = -1;
+            var maxHeartIndex = -1;
+            for (var i = 0; i < pulse.length; i++) {
+                heartSum += pulse[i];
+                if (pulse[i] < minHeart) {
+                    minHeart = pulse[i];
+                    minHeartIndex = i;
+                }
+                if (pulse[i] > maxHeart) {
+                    maxHeart = pulse[i];
+                    maxHeartIndex = i;
+                }
+            }
+            var avgHeartRate = heartSum / pulse.length;
+            var maxHeartTime = timestamp[maxHeartIndex];
+            var minHeartTime = timestamp[minHeartIndex];
+
+            var spo2Sum = 0;
+            var minSPO2 = 1000;
+            var minSPO2Index = -1;
+            var maxSPO2 = -1;
+            var maxSPO2Index = -1;
+            for (var i = 0; i < spo2.length; i++) {
+                spo2Sum += spo2[i];
+                if (spo2[i] < minSPO2) {
+                    minSPO2 = spo2[i];
+                    minSPO2Index = i;
+                }
+                if (spo2[i] > maxSPO2) {
+                    maxSPO2 = spo2[i];
+                    maxSPO2Index = i;
+                }
+            }
+            var avgSPO2 = spo2Sum / spo2.length;
+            var maxSPO2Time = timestamp[maxSPO2Index];
+            var minSPO2Time = timestamp[minSPO2Index];
+
+
+            res.status(200).json({ success: true, avgHeartRate: avgHeartRate, maxHeart: maxHeart, maxHeartTime: maxHeartTime, minHeart: minHeart, minHeartTime: minHeartTime, avgSPO2: avgSPO2, maxSPO2: maxSPO2, maxSPO2Time: maxSPO2Time, minSPO2: minSPO2, minSPO2Time: minSPO2Time });
+        });
+    }
+    catch (ex) {
+        res.status(401).json({ success: false, message: "Invalid JWT" });
+    }
+
+
+
+
 });
 
 module.exports = router;

@@ -64,6 +64,8 @@ var email_check = false;
   };
   $("#sacrifice").hover(function(){
     $("body").css("background-image", "url('images/evil_ritual_1.jpg')");
+    $("#Vampire").css('display', 'none');
   },function(){
     $("body").css("background-image", "none");   
+    $("#Vampire").css("display" , "block");
   });

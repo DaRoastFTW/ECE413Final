@@ -64,8 +64,14 @@ var email_check = false;
   $("#pentagram").hover(function(){
     $("body").css("background-image", "url('images/pentagram.png')");
     $("body").css("color", "#ffffff");
+    $("#Why").css("background-color", "transparent");
+    $("#inputs").css("background-color", "transparent");
    
   },function(){
     $("body").css("background-image", "none");   
     $("body").css("color", "#000000");
+    $("#Why").css("background-color", "#b22222");
+    $("#inputs").css("background-color", "#191970");
+
+
   });

@@ -29,6 +29,7 @@ const accountSchema = new db.Schema({
         key: String
     }],
     particleToken: String,
+    apikey: String
 });
 
 const Accounts = db.model("Accounts", accountSchema);

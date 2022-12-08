@@ -28,15 +28,15 @@
     <div id ="addDevice" class="container border ">
         <!--//device
         //Add Device -->
-        <div class="row">
+        <div class="row m-4 p-2">
         <h2>The Holy Grail Heart Sensors:</h2>
         </div>
         
-        <div class = "row border">
-        <div class="col border" id="linkedDevice">
+        <div class = "row">
+        <div class="col m-3 p-3 border" id="linkedDevice">
             
-            <ul id="linkedDeviceList" class="list-unstyled" >
-                <lh>
+            <ul id="linkedDeviceList" class="list-unstyled font-weight-bold" >
+                <lh >
                     Linked Devices: 
                 </lh>
                 
@@ -45,8 +45,8 @@
             
             </div>
             
-        <div class=" col border" id ="particleDevice">
-            <ul id="particleDeviceList">
+        <div class=" col m-3 p-3 border" id ="particleDevice">
+            <ul id="particleDeviceList" class="list-unstyled font-weight-bold">
                 <lh>
                     Particle Devices: 
                 </lh>
@@ -63,13 +63,13 @@
 
     <div>
         <!--Data -->
-        <div id = "DailyView"  class="contrainer border" >
-            <div  class="row border " id = "row1" >
+        <div id = "DailyView"  class="contrainer" >
+            <div  class="row m-3 p-3 border" id = "row1" >
 
                 <div  class="col" >
                     <h3 id = "detailed_daily_view" class = "mx-auto">Detailed Daily View:</h3>
                 </div>
-                <div id = "radio"  class=" col border input-group-lg ">
+                <div id = "radio"  class=" col input-group-lg m-2">
                     <div class="input-group-prepend">
                         <span class="input-group-text">
                             Choose a Date: 
@@ -77,14 +77,14 @@
 
 
                     </div>
-                    <input type="date" name="dob" id="dob" class="form-control wd-100"/> 
+                    <input type="date" name="dob" id="dob" onchange="updateGraph()" class="form-control wd-100"/> 
                     
                     
                 
                 </div>
 
 
-                <div id = "dayRange" class="col border input-group-lg ">
+                <div id = "dayRange" class="col input-group-lg m-2">
                     
                     <div id ="timeRange"  class="input-group-prepend-lg"> 
                         <span class="input-group-text">
@@ -103,7 +103,7 @@
                     
                 </div>
 
-                <div id = "freq"  class="col border input-group "> 
+                <div id = "freq"  class="col input-group m-2"> 
 
                     
                         <div class="input-group-prepend">
@@ -115,42 +115,74 @@
 
                 </div>
            
-            <div id = "row2"  class="row border">
-
-      
-                
-                
-                
-            </div>   
-            <div id ="row3"  class="row border" >
+           
+            <div id ="row2"  class="row" >
                           <!--Graphs for Heart Rate and Blood 02 levels -->
                 <div  class="col " >
                     
-                    <div  class = "col border text-center font-weight-bold w-300 h-500" id = "heartRate"  >Heart Rate</div>
+                    <div  class = "col  text-center font-weight-bold w-300 h-500" id = "heartRate"  >Heart Rate</div>
                 </div>
+        
                 <div  class="col" >
-                    <div  class="col border text-center font-weight-bold w-300 h-500" id="bloodO2" > Blood O2 % </div>
+                    <div  class="col text-center font-weight-bold w-300 h-500" id="bloodO2" > Blood O2 % </div>
 
 
                 </div>
             </div>  
+            <div class="row" id="row3">
+                <h3> Daily Key Values: </h3>
+                <div class="col border text-center" id="dailyMinDisplay">
+                    <p>Minimums:</p>
+                    <ul>
+                        <li class="text-left" id="minHeartRateDaily">
+                            Heart Rate:
+                        </li>
+                        <li class="text-left" id="minBloodO2Daily">
+                            Blood O2 %: 
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col border text-center id="dailyMaxDipslay">
+                <p >Maximums:</p>
+                <ul>
+                    <li class="text-left" id="maxHeartRateDaily">
+                        Heart Rate:
+                    </li>
+                    <li class="text-left" id="maxBloodO2Daily">
+                        Blood O2 %: 
+                    </li>
+                </ul>
+                </div>
+                <div class=" col border text-center" id="dailyAvgDisplay">
+                <p>Averages:</p>
+                <ul>
+                    <li class="text-left" id="avgHeartRateDaily">
+                        Heart Rate:
+                    </li>
+                    <li class="text-left" id="avgBloodO2Daily">
+                        Blood O2 %: 
+                    </li>
+                </ul>
+                </div>
+            </div>
             
         </div>
         <div id = "Weekly_View">
-            <p>
+            <h3>
                 Last Seven Day Summary: 
-            </p>
-                <div id = "Average"class = "border">
+            </h3>
+                <div id = "averageWeekly"class = "border">
                     Average: Fix in JavaScript
 
 
                 </div>
-                <div id = "minimum" class = "border">
+                <div id = "minimumWeekly" class = "border">
                     Minimum: Fix in JavaScript
 
                 </div>
                 
-                <div id = "maximum" class = "border">
+                <div id = "maximumWeekly" class = "border">
                     Maximum: Fix in JavaScript
                 </div>
 

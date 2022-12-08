@@ -1,11 +1,29 @@
-#particle{
-    float:right;
+h1{
+    
+    
+    text-decoration: underline;
+}   
 
-}
+
+
+
 body{
     background-position: center;
     background-size: 100%;
     background-repeat: no-repeat;
     translate: transformY(60%);
 
+
+}
+
+h1{
+    font-family:"Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+}
+#Why{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    background-color:#b22222;
+}
+#inputs{
+    font-family: "Comic Sans MS", "Comic Sans","Bradley Hand" ,cursive;
+    background-color: #191970;  
 }
