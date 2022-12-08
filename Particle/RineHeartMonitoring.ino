@@ -15,7 +15,7 @@ int startHour = -1;
 int startMin = -1;
 int endHour = -1;
 int endMin = -1;
-
+int api_key = 0;
 int measurementHour;
 int measurementMin;
 
@@ -59,32 +59,37 @@ uint32_t redBuffer[100];
 
 LEDStatus blinkBlue(RGB_COLOR_BLUE, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
 LEDStatus flashYellow(RGB_COLOR_YELLOW, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
+LEDStatus flashGreen(RGB_COLOR_GREEN, LED_PATTERN_BLINK, LED_SPEED_NORMAL, LED_PRIORITY_IMPORTANT);
 
 // Local Storage
 struct data
 {
-  std::string date;
-  std::string time;
-  std::string heartRate;
-  std::string spo2;
+  // char date[15];
+  // char time[15];
+  // char heartRate[5];
+  // char spo2[5];
+  String date;
+  String time;
+  String heartRate;
+  String spo2;
 };
 std::vector<data> localData;
 
-std::string getValue(std::string json, std::string key)
+String getValue(String json, String key)
 {
-  int startKeyIndex = json.find(key);
+  int startKeyIndex = json.indexOf(key);
   int endKeyIndex = startKeyIndex + key.length();
-  int startValueIndex = json.find(":", endKeyIndex) + 1;
-  int endValueIndex = json.find(",", startValueIndex);
+  int startValueIndex = json.indexOf(":", endKeyIndex) + 1;
+  int endValueIndex = json.indexOf(",", startValueIndex);
 
-  std::string value = json.substr(startValueIndex, endValueIndex - startValueIndex);
-  if (value.front() == '"')
+  String value = json.substring(startValueIndex, endValueIndex);
+  if (value.charAt(0) == '"')
   {
-    value = value.erase(0, 1);
+    value = value.remove(0, 1);
   }
-  if (value.back() == '"' || value.back() == '}')
+  if (value.charAt(value.length() - 1) == '"' || value.charAt(value.length() - 1) == '}')
   {
-    value.pop_back();
+    value.remove(value.length() - 1);
   }
   return value;
 }
@@ -114,19 +119,19 @@ void getTime()
 void updateFrequency(const char *event, const char *data)
 {
   Serial.println(data);
-  std::string data1(data);
-  frequency = stoi(getValue(data1, "frequency"));
+  String data1(data);
+  frequency = (getValue(data1, "frequency")).toInt();
   Serial.println(frequency);
 }
 
 void updateTime(const char *event, const char *data)
 {
   Serial.println(data);
-  std::string data1(data);
-  startHour = stoi(getValue(data1, "startHour"));
-  startMin = stoi(getValue(data1, "startMin"));
-  endHour = stoi(getValue(data1, "endHour"));
-  endMin = stoi(getValue(data1, "endMin"));
+  String data1(data);
+  startHour = (getValue(data1, "startHour")).toInt();
+  startMin = (getValue(data1, "startMin")).toInt();
+  endHour = (getValue(data1, "endHour")).toInt();
+  endMin = (getValue(data1, "endMin")).toInt();
 
   Serial.print(startHour);
   Serial.print(":");
@@ -135,16 +140,21 @@ void updateTime(const char *event, const char *data)
   Serial.print(":");
   Serial.println(endMin);
 }
-
+void tokenDelivery(const char *event, const char *data)
+{
+  Serial.println(data);
+  String data1(data);
+  api_key = (getValue(data1, "apikey")).toInt();
+}
 void particleSync(const char *event, const char *data)
 {
   Serial.println(data);
-  std::string data1(data);
-  frequency = stoi(getValue(data1, "frequency"));
-  startHour = stoi(getValue(data1, "startHour"));
-  startMin = stoi(getValue(data1, "startMin"));
-  endHour = stoi(getValue(data1, "endHour"));
-  endMin = stoi(getValue(data1, "endMin"));
+  String data1(data);
+  frequency = (getValue(data1, "frequency")).toInt();
+  startHour = (getValue(data1, "startHour")).toInt();
+  startMin = (getValue(data1, "startMin")).toInt();
+  endHour = (getValue(data1, "endHour")).toInt();
+  endMin = (getValue(data1, "endMin")).toInt();
 
   Serial.println("Particle Sync");
   Serial.println(frequency);
@@ -241,6 +251,20 @@ void readSPO2()
   maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &validSpo2, &dummyHeartRate, &dummyValidHeartRate);
 }
 // This is where we'll also read sensor data
+void concatenate_string(char* s, char* s1)
+{
+    int i;
+ 
+    int j = strlen(s);
+ 
+    for (i = 0; s1[i] != '\0'; i++) {
+        s[i + j] = s1[i];
+    }
+ 
+    s[i + j] = '\0';
+ 
+    return;
+}
 
 // setup() runs once, when the device is first turned on.
 void setup()
@@ -249,21 +273,21 @@ void setup()
   Particle.subscribe("frequency", updateFrequency);
   Particle.subscribe("time range", updateTime);
   Particle.subscribe("initial sync", particleSync);
+  Particle.subscribe("token delivery", tokenDelivery);
   currState = idle;
 
   // Sensor setup
   if (!partSensor.begin(Wire, 400000))
   {
     Serial.println("MAX30105 has left the building");
-    while (1)
-      ;
+    while (1);
   }
-  byte ledBrightness = 0x1f;
-  byte sampleAverage = 8;
-  byte ledMode = 3;
-  int sampleRate = 100;
-  int pulseWidth = 411;
-  int adcRange = 4096;
+  // byte ledBrightness = 0x1f;
+  // byte sampleAverage = 8;
+  // byte ledMode = 3;
+  // int sampleRate = 100;
+  // int pulseWidth = 411;
+  // int adcRange = 4096;
 
   partSensor.setup();
   partSensor.setPulseAmplitudeRed(0x0a);
@@ -276,7 +300,7 @@ void loop()
 {
   // The core of your code will likely live here.
   getTime();
-
+  data dataPoint;
   Serial.print(currMonth);
   Serial.print("/");
   Serial.print(currDay);
@@ -297,17 +321,20 @@ void loop()
     break;
   case wait:
     Serial.println("Wait");
+
     if (!(inTimeRange()))
     {
       currState = idle;
     }
-    else if (measurementInterval())
+    else if (measurementInterval() && !(currHour == measurementHour && currMinute == measurementMin))
     {
       currState = request;
       measurementHour = currHour;
       measurementMin = currMinute;
     }
-    else if (localData.size() > 0) {
+    else if (localData.size() > 0)
+    {
+      
       currState = store;
     }
     break;
@@ -337,33 +364,68 @@ void loop()
     Serial.print(heartRate);
     Serial.print(" SPO2 ");
     Serial.println(spo2);
-    data dataPoint;
-    dataPoint.date = std::to_string(currMonth) + "/" + std::to_string(currDay) + "/" + std::to_string(currYear);
-    dataPoint.time = std::to_string(currHour) + ":" + std::to_string(currMinute);
-    dataPoint.heartRate = std::to_string(heartRate);
-    dataPoint.spo2 = std::to_string(spo2);
+
+    // char currMonthString[5];
+    // char currDayString[5];
+    // char currYearString[5];
+    // char currHourString[5];
+    // char currMinuteString[5];
+    // char heartRateString[5];
+    // char spo2String[5];
+
+    // std::sprintf(currMonthString, "%d", currMonth);
+    // std::sprintf(currDayString, "%d", currDay);
+    // std::sprintf(currYearString, "%d", currYear);
+    // std::sprintf(currHourString, "%d", currMonth);
+    // std::sprintf(currMinuteString, "%d", currMonth);
+    // std::sprintf(heartRateString, "%d", currMonth);
+    // std::sprintf(spo2String, "%d", currMonth);
+
+    dataPoint.date = String(currMonth) + "/" + String(currDay) + "/" + String(currYear);
+    dataPoint.time = String(currHour) + ":" + String(currMinute);
+    dataPoint.heartRate = String(heartRate);
+    dataPoint.spo2 = String(spo2);
     localData.push_back(dataPoint);
-    if (Particle.connected()) {
-    currState = wait;
+    if (Particle.connected())
+    {
+      currState = wait;
     }
-    else {
+    else
+    {
       currState = yellow;
     }
     break;
   case yellow:
     flashYellow.setActive(true);
     delay(2000);
+    flashYellow.setActive(false);
     currState = wait;
     break;
   case store:
     // Placeholder for webhooking into particle cloud here. idk this well.
-    for (int i = 0; i < localData.size(); i++) {
-      localData.erase(i);
+    Serial.println("Store");
+    Serial.println(localData.size());
+    for (int i = 0; i < localData.size(); i++)
+    {
+      String dataStream = "";
+      dataStream += api_key + " ";
+      dataStream += localData.at(i).date + " ";
+      dataStream += localData.at(i).time + " ";
+      dataStream += localData.at(i).heartRate + " ";
+      dataStream += localData.at(i).spo2;
+
+      int strLength = dataStream.length();
+      char charStream[strLength + 1];
+      strcpy(charStream, dataStream.c_str());
+      Particle.publish("store", charStream);
+      // Get ACK
     }
+    flashGreen.setActive(true);
+    delay(2000);
+    flashGreen.setActive(false);
+    localData.clear();
     currState = wait;
     break;
-
-
   }
   delay(5000);
 }
